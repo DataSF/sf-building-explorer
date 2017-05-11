@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset='utf-8' />
+  <title>San Francisco Buildings</title>
+  <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+  <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.37.0/mapbox-gl.css' rel='stylesheet' />
+  <link rel='stylesheet' href='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v2.1.0/mapbox-gl-geocoder.css' type='text/css' />
+  <link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/7.0.0/normalize.min.css' rel='stylesheet' />
+  <link href='https://cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.min.css' rel='stylesheet' />
+  <style>
+  body {
+    font-size: 1.5em; /* currently ems cause chrome bug misinterpreting rems on body element */
+    line-height: 1.6;
+    font-family: -apple-system,system-ui,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    color: #222;
+    margin:0; 
+    padding:0; }
+
+    #map { position:absolute; top:0; bottom:300px; right: 0; width:75%; }
+    #header {position: relative; min-height: 50px; background-color: #245f7b; color: #fff;}
+    .brand {
+      font-size: 2rem;
+      line-height: 50px;
+    }
+    #geocoder { margin-top: 20px; }
+    #content { position: absolute; margin-top: 50px; bottom: 0; left: 0; right: 0; top: 0; margin-bottom: 35px;}
+    #options { position: absolute; top:0; bottom: 0; width:25%; overflow-y: scroll;}
+    #table { position: absolute; height: 300px; bottom: 0; right: 0; width: 75%; overflow-y: scroll;}
+    #footer { position: absolute; bottom: 0; min-height: 35px; left: 0; right: 0;}
+    .text-center {
+      text-align: center;
+    }
+    #footer .made-in {
+      background-color: #245f7b;
+      color: #fff;
+      padding: 5px 0;
+  }
+    .switch-field {
+      padding: 20px 0;
+      overflow: hidden;
+    }
+
+    .switch-title {
+      margin-bottom: 6px;
+    }
+
+    .switch-field input {
+      position: absolute !important;
+      clip: rect(0, 0, 0, 0);
+      height: 1px;
+      width: 1px;
+      border: 0;
+      overflow: hidden;
+    }
+
+    .switch-field label {
+      float: left;
+    }
+
+    .switch-field label {
+      display: inline-block;
+      width: 60px;
+      background-color: #e4e4e4;
+      color: rgba(0, 0, 0, 0.6);
+      font-size: 14px;
+      font-weight: normal;
+      text-align: center;
+      text-shadow: none;
+      padding: 6px 14px;
+      margin-bottom: 0;
+      border: 1px solid rgba(0, 0, 0, 0.2);
+      -webkit-box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px rgba(255, 255, 255, 0.1);
+      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px rgba(255, 255, 255, 0.1);
+      -webkit-transition: all 0.1s ease-in-out;
+      -moz-transition:    all 0.1s ease-in-out;
+      -ms-transition:     all 0.1s ease-in-out;
+      -o-transition:      all 0.1s ease-in-out;
+      transition:         all 0.1s ease-in-out;
+    }
+
+    .switch-field label:hover {
+      cursor: pointer;
+    }
+
+    .switch-field input:checked + label {
+      background-color: #A5DC86;
+      -webkit-box-shadow: none;
+      box-shadow: none;
+    }
+
+    .switch-field label:first-of-type {
+      border-radius: 4px 0 0 4px;
+    }
+
+    .switch-field label:last-of-type {
+      border-radius: 0 4px 4px 0;
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+      margin-bottom: 0;
+      letter-spacing: 0;
+      margin-top: 1.5rem;
+      font-weight: 500;
+    }
+
+    h1 { font-size: 2.6rem; }
+    h2 { font-size: 2.0rem; }
+    h3 { font-size: 3.0em; }
+    h4 { font-size: 2.4em; }
+    h5 { font-size: 1.8em; }
+    h6 { font-size: 1.5em; }
+
+    #buildingInfo h1 {
+      margin-top: 0;
+    }
+
+    .info-header h1 {
+      border-bottom: thin solid black;
+    }
+
+    .inner-margin { margin-left: 15px; margin-right: 15px; }
+    .mapboxgl-ctrl-geocoder { max-width: none; width: 100%; }
+    table {
+      width: 100%;
+    }
+
+    table.small-table {
+      font-size: 80%;
+      margin-top: 10px;
+    }
+
+    table.small-table th, table.small-table td {
+      padding: 0;
+    }
+
+    tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    tfoot tr:first-child td {
+      border-top: solid black thin;
+    }
+
+    table.small-table caption {
+      text-align: left;
+      font-style: italic;
+    }
+    td.status_date {
+      min-width: 75px;
+    }
+
+    tfoot {
+      font-style: italic;
+    }
+    label {
+      display: inline;
+    }
+    ul.not-styled {
+      list-style: none;
+    }
+    ul.not-styled li {
+      margin-bottom: 0;
+    }
+
+    #map.table-hidden {
+      bottom: 0;
+    }
+
+    #table.table-hidden {
+      display: none;
+    }
+
+  </style>
+</head>
+<body>
+  <div id='header'>
+    <div class='inner-margin'>
+      <div class='brand'>San Francisco Building Explorer (Demo)</div>
+    </div>
+  </div>
+  <div id='content'>
+    <div id='map' class='table-hidden'></div>
+    <div id='table' class='table-hidden'>
+      <table>
+        <!-- IMPORTANT, class="list" have to be at tbody -->
+        <thead>
+          <th>Issuing Department</th>
+          <th>Record ID</th>
+          <th>Parcel</th>
+          <th>Address</th>
+          <th>Record Type</th>
+          <th>Status</th>
+          <th>Status Date</th>
+          <th>Description</th>
+        </thead>
+        <tbody class='list'>
+          <tr>
+            <td class='dept'></td>
+            <td class='id'></td>
+            <td class='parcel'></td>
+            <td class='address'></td>
+            <td class='record_type'></td>
+            <td class='status'></td>
+            <td class='status_date'></td> 
+            <td class='description'></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div id='options'>
+      <div class='inner-margin'>
+        <div id='geocoder'></div>
+        <div class='switch-field'>
+          <div class='switch-title'>Visualization</div>
+          <div class='switch-input'>
+            <input id='3dim' type='radio' name='maptoggle' value='3d' checked='checked' onclick='tilt(true)'>
+            <label for='3dim' onclick='tilt(true)'>3D</label>
+            <input id='2dim' type='radio' name='maptoggle' value='pizza' onclick='tilt(false)'>
+            <label for='2dim' onclick='tilt(false)'>2D</label>
+          </div>
+        </div>
+        <div id='buildingInfo'>
+          <div class='info-panel'>
+            <div class='info-header'>
+              <h1>Selected Building Information</h1>
+            </div>
+            <div class='info-body'>
+              <div>Click on a building in the map to display related information</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id='footer'>
+    <div class="text-center made-in">
+      Made with <i class="fa fa-heart"><span class="sr-only">heart</span></i> in San Francisco
+    </div>
+  </div>
+  <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.37.0/mapbox-gl.js'></script>
+  <script src='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v2.1.0/mapbox-gl-geocoder.min.js'></script>
+  <script src="turf.min.js" charset="utf-8"></script>
+  <script src="wellknown.js" charset="utf-8"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
+  <script>
+  mapboxgl.accessToken = 'pk.eyJ1IjoiZ2VvamFzb24iLCJhIjoiY2l1NTNlYmIwMGh1dTJ5bzFmYWM4Z3M2aSJ9.JxA6SSvoURhQYi7gbmbZFg'
+  var map = new mapboxgl.Map({
+    style: 'mapbox://styles/mapbox/light-v9',
+    center: [-122.41840239268754, 37.778666100153075],
+    zoom: 16,
+    pitch: 60,
+    bearing: 36,
+    container: 'map'
+  })
+
+  var geocoder = new MapboxGeocoder({
+    accessToken: mapboxgl.accessToken,
+    placeholder: 'Search map by address',
+    proximity: {
+      longitude: -122.41840239268754,
+      latitude: 37.778666100153075
+    }
+  })
+
+  document.getElementById('geocoder').appendChild(geocoder.onAdd(map))
+  // constants
+  var BASE_API = 'https://data.sfgov.org/resource/'
+  var BUILDINGS_ID = '2s2t-jwzp'
+  var ADDRESSES_ID = 'c59h-mc8k'
+  var PARCELS_ID = '3iun-6we5'
+  var PERMITS_ID = 'vy2q-29it'
+  var CASES_ID = 'uqai-dcpf'
+  var ENERGY_ID = '75rg-imyz'
+  var ZONING_ID = '8br2-hhp3'
+  var LANDUSE_ID = 'a2rp-pwkh'
+  var USECODES = {
+    'cie': 'Cultural, Institutional, Educational',
+    'med': 'Medical',
+    'mips': 'Office (Management, Information, Professional Services)',
+    'mixed': 'Mixed Uses (Without Residential)',
+    'mixres': 'Mixed Uses (With Residential)',
+    'pdr': 'Industrial (Production, Distribution, Repair)',
+    'retail/ent': 'Retail, Entertainment',
+    'retail': 'Retail, Entertainment',
+    'resident': 'Residential',
+    'visitor': 'Hotels, Visitor Services',
+    'vacant': 'Vacant',
+    'row': 'Right-of-Way',
+    'openspace': 'Open Space'
+  }
+
+  var USESQFT = ['cie', 'med', 'mips', 'retail', 'pdr', 'visitor']
+
+  // state variables
+  var isDragging
+  var buildingData
+  var emptyGeojson = {
+    "type": "FeatureCollection",
+    "features": []
+  }
+  var popup = new mapboxgl.Popup({
+    closeButton: false,
+    closeOnClick: false,
+    anchor: 'top-left',
+    offset: 10
+  })
+  var parcelArray = []
+  var footprintWKT = ''
+  var addressWKT = ''
+
+  function addBuildings (data) {
+    buildingData = data
+
+    map
+    .addSource('buildings', {
+      'type': 'geojson',
+      'data': data
+    })
+    .addSource('highlight', {
+      'type': 'geojson',
+      'data': emptyGeojson
+    })
+    .addSource('selected', {
+      'type': 'geojson',
+      'data': emptyGeojson
+    })
+
+    map
+    .addLayer({
+      'id': 'buildings-3d',
+      'type': 'fill-extrusion',
+      'source': 'buildings',
+      'minzoom': 15,
+      'paint': {
+        'fill-extrusion-color': '#aaa',
+        'fill-extrusion-height': {
+          'type': 'identity',
+          'property': 'height'
+        },
+        'fill-extrusion-opacity': 0.8
+      }
+    })
+    .addLayer({
+      'id': 'buildings-2d',
+      'type': 'fill',
+      'source': 'buildings',
+      'paint': {
+        'fill-color': '#aaa',
+        'fill-opacity': 0
+      }
+    })
+    .addLayer({
+      'id': 'highlighted_fill',
+      'type': 'line',
+      'source': 'highlight',
+      'paint': {
+        'line-color': 'orange'
+      }
+    })
+    .addLayer({
+      'id': 'highlighted_extrusion',
+      'type': 'fill-extrusion',
+      'source': 'highlight',
+      'paint': {
+        'fill-extrusion-color': 'orange',
+        'fill-extrusion-height': {
+          'type': 'identity',
+          'property': 'height'
+        },
+        'fill-extrusion-opacity': 0.5
+      }
+    })
+    .addLayer({
+      'id': 'selected_fill',
+      'type': 'fill',
+      'source': 'selected',
+      'paint': {
+        'fill-color': 'red'
+      }
+    })
+    .addLayer({
+      'id': 'selected_extrusion',
+      'type': 'fill-extrusion',
+      'source': 'selected',
+      'paint': {
+        'fill-extrusion-color': 'red',
+        'fill-extrusion-height': {
+          'type': 'identity',
+          'property': 'height'
+        },
+        'fill-extrusion-opacity': 0.5
+      }
+    })
+  }
+
+  function searchForArray (haystack, needle) {
+    var i, j, current
+    for (i = 0; i < haystack.length; ++i) {
+      if (needle.length === haystack[i].length) {
+        current = haystack[i]
+        for (j = 0; j < needle.length && needle[j] === current[j]; ++j) {}
+          if (j === needle.length) return i
+        }
+    }
+    return -1
+  }
+
+  function updateBuildings (data) {
+    // adapted from https://github.com/stamen/merge-geojson-features/blob/master/index.js for merging features
+    /*
+    features = data['features'].concat(buildingData['features'])
+    var seen = []
+    features = features.filter(function(x) {
+      if (x.id) {
+        if (seen.indexOf(x.id) > -1) {
+          return false
+        }
+        seen.push(x.id)
+      }
+      return true
+    })
+
+    data['features'] = features
+    */
+    buildingData = data
+    map.getSource('buildings').setData(data)
+  }
+
+  function fetchAddresses (wkt, data) {
+    data = data || {}
+    return fetch(BASE_API + ADDRESSES_ID + '.json?$where=intersects(location,"' + wkt + '")&$order=address,unit_number')
+    .then(function (res) {
+      return res.json().then(function (json) {
+        return Object.assign({}, data, {
+          addresses: json,
+          addressIntersect: wktFromPoints(json, 'location')
+        })
+      })
+    })
+  }
+
+  function fetchParcels (wkt, data) {
+    data = data || {}
+    return fetch(BASE_API + PARCELS_ID + '.json?$where=intersects(geometry,"' + wkt + '")&$order=map_add+desc')
+    .then(function (res) {
+      return res.json().then(function (json) {
+        return Object.assign({}, data, {
+          parcels: json,
+          parcelIntersect: wktFromPolygon(json[0], 'geometry')
+        })
+      })
+    })
+  }
+
+  function fetchDataByWKT (name, id, geomName, wkt, data, query) {
+    data = data || {}
+    query = '&' + (query || '')
+    return fetch(BASE_API + id + '.json?$where=intersects(' + geomName + ',"' + wkt + '")' + query)
+    .then( function (res) {
+      return res.json().then(function (json) {
+        return Object.assign({}, data, {
+          [name]: json
+        })
+      })
+    })
+  }
+
+  function fetchPermits (query) {
+    var whereStrings = []
+    query.parcels.forEach(function (parcel) {
+      whereStrings.push('lot="' + parcel.lot_num + '"')
+    })
+    return fetch(BASE_API + PERMITS_ID + '.json?$where=block="' + query.parcels[0].block_num + '"+and+(' + whereStrings.join('+or+') + ')&$order=status_date+desc')
+    .then(function (res) {
+      return res.json()
+    })
+  }
+
+  function fetchPlanningCases (query) {
+    var whereStrings = []
+    query.parcels.forEach(function (parcel) {
+      whereStrings.push('apn="' + parcel.blklot + '"')
+    })
+    return fetch(BASE_API + CASES_ID + '.json?$where=' + whereStrings.join('+or+'))
+    .then(function (res) {
+      return res.json()
+    })
+  }
+
+  function wktFromPolygon (data, geomName) {
+    var WKT = wellknown.stringify(data[geomName])
+    return WKT
+  }
+
+  function wktFromPoints (data, geomName) {
+    if (data.length === 0) return false
+
+      var points = []
+    if (data.length > 1) {
+      data.forEach(function (record, idx) {
+        var coords = record[geomName].coordinates
+        if (searchForArray(points, coords) === -1) {
+          points.push(coords)
+        }
+      })
+    } else {
+      points.push(data[0].location.coordinates)
+    }
+    var geometry = points.length > 1 ? turf.lineString(points) : turf.point(points[0])
+    var WKT = wellknown.stringify(geometry)
+    return WKT
+  }
+
+  function normalizeRecords (values) {
+    var date
+    var normalized = values.map(function (rec, idx) {
+      if (rec['permit_number']) {
+        var address = rec['street_number'] + (rec['street_number_suffix'] ? rec['street_number_suffix'] + ' ' : ' ') + rec['street_name'] + ' ' + rec['street_suffix']
+        date = rec['status_date'] ? rec['status_date'].split('T')[0] : ' unknown'
+        return {
+          id: rec['permit_number'],
+          parcel: rec['block'] + rec['lot'],
+          address,
+          dept: 'Building Inspection',
+          record_type: rec['permit_type_definition'],
+          status: rec['status'],
+          status_date: date,
+          description: rec['description']
+        }
+      } else {
+        date = rec['record_status_date'] ? rec['record_status_date'].substr(0, 4) + '-' + rec['record_status_date'].substr(4, 2) + '-' + rec['record_status_date'].substr(6, 2) : ' unknown'
+        return {
+          id: rec['record_id'],
+          parcel: rec['apn'],
+          address: rec['address'],
+          dept: 'Planning',
+          record_type: rec['record_type'],
+          status: rec['record_status'],
+          status_date: date,
+          description: rec['description']
+        }
+      }
+    })
+
+    loadTable(normalized)
+  }
+
+  function loadTable (records) {
+    var options = {
+      valueNames: [ 'id', 'parcel', 'address', 'dept', 'record_type', 'status', 'status_date', 'description' ]
+    }
+
+    var table = new List('table', options)
+    table.clear()
+    table.add(records)
+    table.sort('status_date', {
+      order: 'desc'
+    })
+  }
+
+  function tilt (on) {
+    var pitch = !on ? 0 : 60
+
+    if (!on) {
+      map.setPaintProperty('buildings-3d', 'fill-extrusion-opacity', 0)
+      map.setPaintProperty('buildings-2d', 'fill-opacity', 0.8)
+      // map.setPaintProperty('highlighted_extrusion', 'fill-extrusion-opacity', 0)
+    } else {
+      map.setPaintProperty('buildings-3d', 'fill-extrusion-opacity', 0.8)
+      map.setPaintProperty('buildings-2d', 'fill-opacity', 0)
+      // map.setPaintProperty('highlighted_extrusion', 'fill-extrusion-opacity', .5)
+    }
+
+    map.easeTo({pitch})
+  }
+
+  function onMove (e) {
+    isDragging = true
+  }
+
+  function onUp (e) {
+    if (!isDragging) return
+
+      loadData(false)
+    isDragging = false
+    map.off('mousemove', onMove)
+  }
+
+  function mouseDown () {
+    map.on('mousemove', onMove)
+    map.once('mouseup', onUp)
+  }
+
+  function onHoverBuilding (e) {
+    var features = map.queryRenderedFeatures(e.point, { layers: ['buildings-2d'] });
+    var ft = features[0]
+
+    if (ft) {
+      map.getSource('highlight').setData(ft)
+    } else {
+      map.getSource('highlight').setData(emptyGeojson)
+    }
+
+    var showTooltip = ft && e.originalEvent.which===0
+
+    if (showTooltip) {
+      var html = '<strong>Building ID:</strong> ' +
+      ft.properties.id +
+      '<p>Click to select and query features</p>'
+      map.getCanvas().style.cursor = 'pointer'
+      popup.setLngLat(e.lngLat)
+      .setHTML(html)
+      .addTo(map)
+    } else {
+      map.getCanvas().style.cursor = ''
+      popup.remove()
+    }
+  }
+
+  function renderBuildingInfo (data) {
+    var body
+    var sections = []
+    // General Characteristics info
+    var building = data.building
+    var landuse = data.landuse[0]
+    body = '<div>Max height: ' + building.height + ' m (' + Math.round(building.height * 328.084)/100 + ' ft)</div>'
+    body += '<div>Est. Year Built: ' + landuse.yrbuilt + '</div>'
+    sections.push(renderInfoSection('General Building Characteristics', body))
+
+    // Zoning info
+    var zoning = data.zoning[0]
+    var codeArray = zoning.url.split('_')
+    var code = codeArray[codeArray.length - 1]
+    var link = '<a href="' + zoning.url +  '">SF Planning Code Section ' + code + '</a>'
+    body = '<div>' + zoning.zoning + ', District: ' + zoning.districtna + ' ' + zoning.gen + ' ' + link
+    sections.push(renderInfoSection('Zoning', body))
+
+    // Land use info
+    body = '<div>Primary land use: ' + USECODES[landuse.landuse.toLowerCase()] + '</div>'
+    if (landuse.resunits) body += '<div>Est. Residential Units: ' + landuse.resunits + '</div>'
+    // Land use table
+  body += '<table class="small-table"><caption>Square footage by land use type</caption><thead><th>Land use type</th><th>Est. Square Footage</th></thead>'
+  var rows = Object.keys(landuse).filter(function (key) {
+    return USESQFT.indexOf(key) > -1
+  }).map(function (key) {
+    return '<tr><td class="use">' + USECODES[key.toLowerCase()] + '</td><td class="sqft">' + Number(landuse[key]).toLocaleString() + '</td></tr>'
+  }).join('')
+  body += '<tbody>' + rows + '</tbody>'
+  body += '<tfoot><tr><td>Total</td><td>' + Number(landuse.total_uses).toLocaleString() + '</td></tr></table>'
+  sections.push(renderInfoSection('Land Use', body))
+
+    // Associated addresses
+    var addresses = data.addresses
+    var list = addresses.map(function (elem) {
+      var address = elem.address + (elem.unit_number ? ' Unit ' + elem.unit_number : '')
+      return '<li>' + address + '</li>'
+    }).join('')
+    body = '<ul class="not-styled">' + list + '</ul>'
+    sections.push(renderInfoSection('Associated Addresses', body))
+
+    // Associated parcels
+    var parcels = data.parcels
+    var list = parcels.map(function (elem) {
+      var hist = elem.rec_drop ? ' (dropped ' + elem.rec_drop + ')' : ' (added ' + (elem.rec_add || ' on unknown date') + ')'
+      return '<li>' + elem.blklot + hist + '</li>'
+    }).join('')
+    body = '<ul class="not-styled">' + list + '</ul>'
+    sections.push(renderInfoSection('Associated Parcels', body))
+
+    document.querySelector('#buildingInfo .info-body').innerHTML = sections.join('')
+  }
+
+
+
+  function renderInfoSection (title, body) {
+    return "<div class='info-section'><h2>" + title + "</h2>" + body
+  }
+
+  function onSelectBuilding (point) {
+    var features = map.queryRenderedFeatures(point, {layers: ['buildings-3d']})
+    var ft = features[0]
+    if (ft) {
+      map.getSource('selected').setData(ft)
+      map.getSource('highlight').setData(emptyGeojson)
+      var wktFootprint = wellknown.stringify(ft)
+
+      /*
+      Here we fetch addresses and associated parcels
+      Address points from EAS return an associated parcel, but these are often the parcel at the time of adding the address. However, the parcel may have changed since the address was created.
+      To get around this we use the returned point geometries to run an intersect query against recorded parcel geography (which includes current and historic parcels).
+      We do a little pre-processing to the geometries to create either a lineString or Point to send with the api query payload. This allows us to run a single query instead of multiple, saving some round trips.
+      */
+      
+      fetchAddresses(wktFootprint)
+      .then(function (json) {
+        var wktAddress = json.addressIntersect
+        if (!wktAddress) {
+          wktAddress = wellknown.stringify(turf.centerOfMass(ft))
+        }
+        if (typeof json.addressIntersect === 'string') {
+          return fetchParcels(wktAddress, json)
+        } else {
+          return fetchParcels(wktAddress, json).then(function (json) {
+            return fetchAddresses(json.parcelIntersect, json)
+          })
+        }
+      })
+      .then(function (json) {
+        console.log(json)
+        Promise.all([
+          fetchDataByWKT('landuse', LANDUSE_ID, 'the_geom', json.addressIntersect),
+          fetchDataByWKT('zoning', ZONING_ID, 'geometry', json.addressIntersect)
+          ]).then(function (values) {
+            return Object.assign({}, json, values[0], values[1], {'building': ft['properties']})
+          }).then(function(json) {
+           renderBuildingInfo(json)
+         })
+        })
+    }
+  }
+
+  function loadPermits () {
+    Promise.all([
+      fetchPermits(json),
+      fetchPlanningCases(json)])
+    .then(function (values) {
+      var combined = values[0].concat(values[1])
+      console.log(combined)
+      normalizeRecords(combined)
+    })
+  }
+
+  function loadData (init) {
+    var mapBounds = map.getBounds()
+    var poly = {
+      'type': 'Feature',
+      'properties': {},
+      'geometry': {
+        'type': 'Polygon',
+        'coordinates': [[mapBounds.getNorthWest().toArray(), mapBounds.getNorthEast().toArray(), mapBounds.getSouthEast().toArray(), mapBounds.getSouthWest().toArray(), mapBounds.getNorthWest().toArray()]]
+      }
+    }
+
+    var buffered = turf.buffer(poly, 0.5, 'miles')
+    var bbox = turf.bbox(buffered)
+    // Socrata API returns the numeric columns as strings, we have to cast the ones we want to use in the extrusion as float
+    fetch('https://data.sfgov.org/resource/2s2t-jwzp.geojson?$select=sf16_bldgid+as+id,hgt_median_m,hgt_maxcm/100+as+height,the_geom&$limit=100000&$where=within_box(the_geom,' + bbox[1] + ', ' + bbox[0] + ', ' + bbox[3] + ', ' + bbox[2] + ')&$order=objectid').then(function (response) {
+      response.json().then(function (json) {
+        json['features'] = json['features'].map(function (feature, idx) {
+          feature.properties.height = parseFloat(feature.properties.height)
+          return feature
+        })
+        init ? addBuildings(json) : updateBuildings(json)
+      })
+    })
+  }
+  // the 'building' layer in the mapbox-streets vector source contains building-height
+  // data from OpenStreetMap.
+  map.on('load', function () {
+    map.setLayoutProperty('building', 'visibility', 'none')
+    loadData(true)
+    // map.on('mousedown', mouseDown)
+    map.on('mousemove', onHoverBuilding)
+    map.on('click', function (e) {
+      onSelectBuilding(e.point)
+    })
+
+    geocoder.on('result', function (e) {
+      console.log(e)
+      var geocodeWKT = wellknown.stringify(e.result.geometry)
+
+      fetchDataByWKT('building', BUILDINGS_ID, 'the_geom', geocodeWKT, false, '$select=sf16_bldgid+as+id,hgt_median_m,hgt_maxcm/100+as+height,the_geom')
+      .then(function(json) {
+        console.log(json)
+        map.getSource('selected')
+        .setData({
+          type: 'Feature',
+          geometry: json.building[0].the_geom, 
+          properties: { 
+            height: parseFloat(json.building[0].height) 
+          }
+        })
+      })
+    })
+  })
+</script>
+
+</body>
+</html>
