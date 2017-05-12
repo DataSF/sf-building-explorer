@@ -31,11 +31,16 @@
     .text-center {
       text-align: center;
     }
+    button {
+      width: 100%;
+      margin-bottom: 0;
+      margin-top: 1rem;
+    }
     #footer .made-in {
       background-color: #245f7b;
       color: #fff;
       padding: 5px 0;
-  }
+    }
     .switch-field {
       padding: 20px 0;
       overflow: hidden;
@@ -274,6 +279,13 @@
   var ENERGY_ID = '75rg-imyz'
   var ZONING_ID = '8br2-hhp3'
   var LANDUSE_ID = 'a2rp-pwkh'
+  var FIRINS_ID = 'vygc-d77z'
+  var FIRVIO_ID = 'x75j-u3wx'
+  var BLDVIO_ID = 'jfcn-py3d'
+  var FIRCOM_ID = 'v3w9-dyka'
+  var BLDCOM_ID = 'frbs-hx9j'
+  var CITYFAC_ID = 'i5wr-crji'
+
   var USECODES = {
     'cie': 'Cultural, Institutional, Educational',
     'med': 'Medical',
@@ -293,6 +305,7 @@
   var USESQFT = ['cie', 'med', 'mips', 'retail', 'pdr', 'visitor']
 
   // state variables
+  var state = {}
   var isDragging
   var buildingData
   var emptyGeojson = {
@@ -392,6 +405,8 @@
         'fill-extrusion-opacity': 0.5
       }
     })
+
+    map.setLayoutProperty('building', 'visibility', 'none')
   }
 
   function searchForArray (haystack, needle) {
@@ -427,32 +442,6 @@
     map.getSource('buildings').setData(data)
   }
 
-  function fetchAddresses (wkt, data) {
-    data = data || {}
-    return fetch(BASE_API + ADDRESSES_ID + '.json?$where=intersects(location,"' + wkt + '")&$order=address,unit_number')
-    .then(function (res) {
-      return res.json().then(function (json) {
-        return Object.assign({}, data, {
-          addresses: json,
-          addressIntersect: wktFromPoints(json, 'location')
-        })
-      })
-    })
-  }
-
-  function fetchParcels (wkt, data) {
-    data = data || {}
-    return fetch(BASE_API + PARCELS_ID + '.json?$where=intersects(geometry,"' + wkt + '")&$order=map_add+desc')
-    .then(function (res) {
-      return res.json().then(function (json) {
-        return Object.assign({}, data, {
-          parcels: json,
-          parcelIntersect: wktFromPolygon(json[0], 'geometry')
-        })
-      })
-    })
-  }
-
   function fetchDataByWKT (name, id, geomName, wkt, data, query) {
     data = data || {}
     query = '&' + (query || '')
@@ -466,25 +455,16 @@
     })
   }
 
-  function fetchPermits (query) {
-    var whereStrings = []
-    query.parcels.forEach(function (parcel) {
-      whereStrings.push('lot="' + parcel.lot_num + '"')
-    })
-    return fetch(BASE_API + PERMITS_ID + '.json?$where=block="' + query.parcels[0].block_num + '"+and+(' + whereStrings.join('+or+') + ')&$order=status_date+desc')
-    .then(function (res) {
-      return res.json()
-    })
-  }
-
-  function fetchPlanningCases (query) {
-    var whereStrings = []
-    query.parcels.forEach(function (parcel) {
-      whereStrings.push('apn="' + parcel.blklot + '"')
-    })
-    return fetch(BASE_API + CASES_ID + '.json?$where=' + whereStrings.join('+or+'))
-    .then(function (res) {
-      return res.json()
+  function fetchDataByAttributes (name, id, where, data, query) {
+    data = data || {}
+    query = '&' + (query || '')
+    return fetch(BASE_API + id + '.json?$where=' + where + query)
+    .then( function (res) {
+      return res.json().then(function (json) {
+        return Object.assign({}, data, {
+          [name]: json
+        })
+      })
     })
   }
 
@@ -592,6 +572,50 @@
     map.once('mouseup', onUp)
   }
 
+  var fetchPermits = function () {
+    var where = state.parcels.map(function (parcel) {
+      return 'lot="' + parcel.lot_num + '"'
+    }).join('+or+')
+    where = 'block="' + state.parcels[0].block_num + '"+and+(' + where + ')'
+    
+    return fetchDataByAttributes('permits', PERMITS_ID, where, {}, '$order=status_date+desc')
+  }
+
+  var fetchPlanningCases = function () {
+    var where = state.parcels.map(function (parcel) {
+      return 'apn="' + parcel.blklot + '"'
+    }).join('+or+')
+    return fetchDataByAttributes('permits', CASES_ID, where)
+  }
+
+  function onSelectRelated(type) {
+    var TYPES = {
+      'permits': [fetchPermits, fetchPlanningCases],
+      'inspections': ['xxxx-xxxx']
+    }
+    
+    var promises = TYPES[type].map(function(fn) {
+      return fn()
+    })
+
+    Promise.all(promises)
+      .then(function (values) {
+        console.log(values)
+      })
+    /*
+    Promise.all([
+      fetchPermits(json),
+      fetchPlanningCases(json)])
+    .then(function (values) {
+      var combined = values[0].concat(values[1])
+      console.log(combined)
+      normalizeRecords(combined)
+    })
+
+    Promise.all(TYPES[type])
+      .then()*/
+  }
+
   function onHoverBuilding (e) {
     var features = map.queryRenderedFeatures(e.point, { layers: ['buildings-2d'] });
     var ft = features[0]
@@ -618,15 +642,76 @@
     }
   }
 
+  var fetchAddresses = function (wkt, data, query) {
+    query = query || '$order=address,unit_number'
+    return fetchDataByWKT('addresses', ADDRESSES_ID, 'location', wkt, data, query)
+  }
+
+  var fetchParcels = function (wkt, data, query) {
+    query = query || '$order=map_add+desc'
+    return fetchDataByWKT('parcels', PARCELS_ID, 'geometry', wkt, data, query)
+  }
+
+  var fetchPermitsEnt = function () {
+    console.log(state)
+  }
+
+  function onSelectBuilding (point) {
+    var features = map.queryRenderedFeatures(point, {layers: ['buildings-3d']})
+    var ft = features[0]
+    if (ft) {
+      map.getSource('selected').setData(ft)
+      map.getSource('highlight').setData(emptyGeojson)
+      var wktFootprint = wellknown.stringify(ft)
+      
+      fetchAddresses(wktFootprint)
+      .then(function (json) {
+        var wktAddress = json.addressIntersect = wktFromPoints(json.addresses, 'location')
+        if (!wktAddress) {
+          wktAddress = wellknown.stringify(turf.centerOfMass(ft))
+        }
+        if (typeof json.addressIntersect === 'string') {
+          return fetchParcels(wktAddress, json)
+        } else {
+          return fetchParcels(wktAddress, json).then(function (json) {
+            json.parcelIntersect = wktFromPolygon(json.parcels[0], 'geometry')
+            json.addressIntersect = wktAddress
+            return fetchAddresses(json.parcelIntersect, json)
+          })
+        }
+      })
+      .then(function (json) {
+        json.parcelIntersect = json.parcelIntersect || wktFromPolygon(json.parcels[0], 'geometry')
+        Promise.all([
+          fetchDataByWKT('landuse', LANDUSE_ID, 'the_geom', json.addressIntersect),
+          fetchDataByWKT('zoning', ZONING_ID, 'geometry', json.addressIntersect),
+          fetchDataByWKT('facility', CITYFAC_ID, 'geom', json.parcelIntersect)
+          ]).then(function (values) {
+            return Object.assign({}, json, values[0], values[1], values[2], {'building': ft['properties']})
+          }).then(function(json) {
+            state = Object.assign({}, state, json)
+            console.log(state)
+            renderBuildingInfo(json)
+         })
+        })
+    }
+  }
+
   function renderBuildingInfo (data) {
     var body
     var sections = []
+    // Buttons
+    sections.push(renderButton('Show permits and entitlements', 'permits'))
+
     // General Characteristics info
     var building = data.building
     var landuse = data.landuse[0]
-    body = '<div>Max height: ' + building.height + ' m (' + Math.round(building.height * 328.084)/100 + ' ft)</div>'
+    var facility = data.facility[0]
+    body = '<div>Building ID: ' + building.id + '</div>'
+    body += '<div>Max height: ' + building.height + ' m (' + Math.round(building.height * 328.084)/100 + ' ft)</div>'
     body += '<div>Est. Year Built: ' + landuse.yrbuilt + '</div>'
-    sections.push(renderInfoSection('General Building Characteristics', body))
+    if (facility) body += '<div>City Department Own or Lease: ' + facility.department_name + ' (' + facility.owned_leased + ')</div>'
+    sections.push(renderInfoSection('General Characteristics', body))
 
     // Zoning info
     var zoning = data.zoning[0]
@@ -640,15 +725,15 @@
     body = '<div>Primary land use: ' + USECODES[landuse.landuse.toLowerCase()] + '</div>'
     if (landuse.resunits) body += '<div>Est. Residential Units: ' + landuse.resunits + '</div>'
     // Land use table
-  body += '<table class="small-table"><caption>Square footage by land use type</caption><thead><th>Land use type</th><th>Est. Square Footage</th></thead>'
-  var rows = Object.keys(landuse).filter(function (key) {
-    return USESQFT.indexOf(key) > -1
-  }).map(function (key) {
-    return '<tr><td class="use">' + USECODES[key.toLowerCase()] + '</td><td class="sqft">' + Number(landuse[key]).toLocaleString() + '</td></tr>'
-  }).join('')
-  body += '<tbody>' + rows + '</tbody>'
-  body += '<tfoot><tr><td>Total</td><td>' + Number(landuse.total_uses).toLocaleString() + '</td></tr></table>'
-  sections.push(renderInfoSection('Land Use', body))
+    body += '<table class="small-table"><caption>Square footage by land use type</caption><thead><th>Land use type</th><th>Est. Square Footage</th></thead>'
+    var rows = Object.keys(landuse).filter(function (key) {
+      return USESQFT.indexOf(key) > -1
+    }).map(function (key) {
+      return '<tr><td class="use">' + USECODES[key.toLowerCase()] + '</td><td class="sqft">' + Number(landuse[key]).toLocaleString() + '</td></tr>'
+    }).join('')
+    body += '<tbody>' + rows + '</tbody>'
+    body += '<tfoot><tr><td>Total</td><td>' + Number(landuse.total_uses).toLocaleString() + '</td></tr></table>'
+    sections.push(renderInfoSection('Land Use', body))
 
     // Associated addresses
     var addresses = data.addresses
@@ -671,64 +756,12 @@
     document.querySelector('#buildingInfo .info-body').innerHTML = sections.join('')
   }
 
-
+  function renderButton (title, type) {
+    return "<button class='button-primary' onclick='onSelectRelated(\"" + type + "\")'>" + title + "</button>"
+  }
 
   function renderInfoSection (title, body) {
     return "<div class='info-section'><h2>" + title + "</h2>" + body
-  }
-
-  function onSelectBuilding (point) {
-    var features = map.queryRenderedFeatures(point, {layers: ['buildings-3d']})
-    var ft = features[0]
-    if (ft) {
-      map.getSource('selected').setData(ft)
-      map.getSource('highlight').setData(emptyGeojson)
-      var wktFootprint = wellknown.stringify(ft)
-
-      /*
-      Here we fetch addresses and associated parcels
-      Address points from EAS return an associated parcel, but these are often the parcel at the time of adding the address. However, the parcel may have changed since the address was created.
-      To get around this we use the returned point geometries to run an intersect query against recorded parcel geography (which includes current and historic parcels).
-      We do a little pre-processing to the geometries to create either a lineString or Point to send with the api query payload. This allows us to run a single query instead of multiple, saving some round trips.
-      */
-      
-      fetchAddresses(wktFootprint)
-      .then(function (json) {
-        var wktAddress = json.addressIntersect
-        if (!wktAddress) {
-          wktAddress = wellknown.stringify(turf.centerOfMass(ft))
-        }
-        if (typeof json.addressIntersect === 'string') {
-          return fetchParcels(wktAddress, json)
-        } else {
-          return fetchParcels(wktAddress, json).then(function (json) {
-            return fetchAddresses(json.parcelIntersect, json)
-          })
-        }
-      })
-      .then(function (json) {
-        console.log(json)
-        Promise.all([
-          fetchDataByWKT('landuse', LANDUSE_ID, 'the_geom', json.addressIntersect),
-          fetchDataByWKT('zoning', ZONING_ID, 'geometry', json.addressIntersect)
-          ]).then(function (values) {
-            return Object.assign({}, json, values[0], values[1], {'building': ft['properties']})
-          }).then(function(json) {
-           renderBuildingInfo(json)
-         })
-        })
-    }
-  }
-
-  function loadPermits () {
-    Promise.all([
-      fetchPermits(json),
-      fetchPlanningCases(json)])
-    .then(function (values) {
-      var combined = values[0].concat(values[1])
-      console.log(combined)
-      normalizeRecords(combined)
-    })
   }
 
   function loadData (init) {
@@ -745,7 +778,7 @@
     var buffered = turf.buffer(poly, 0.5, 'miles')
     var bbox = turf.bbox(buffered)
     // Socrata API returns the numeric columns as strings, we have to cast the ones we want to use in the extrusion as float
-    fetch('https://data.sfgov.org/resource/2s2t-jwzp.geojson?$select=sf16_bldgid+as+id,hgt_median_m,hgt_maxcm/100+as+height,the_geom&$limit=100000&$where=within_box(the_geom,' + bbox[1] + ', ' + bbox[0] + ', ' + bbox[3] + ', ' + bbox[2] + ')&$order=objectid').then(function (response) {
+    fetch('https://data.sfgov.org/resource/2s2t-jwzp.geojson?$select=sf16_bldgid+as+id,hgt_median_m,hgt_maxcm/100+as+height,the_geom&$limit=100&$where=within_box(the_geom,' + bbox[1] + ', ' + bbox[0] + ', ' + bbox[3] + ', ' + bbox[2] + ')&$order=objectid').then(function (response) {
       response.json().then(function (json) {
         json['features'] = json['features'].map(function (feature, idx) {
           feature.properties.height = parseFloat(feature.properties.height)
@@ -758,12 +791,17 @@
   // the 'building' layer in the mapbox-streets vector source contains building-height
   // data from OpenStreetMap.
   map.on('load', function () {
-    map.setLayoutProperty('building', 'visibility', 'none')
     loadData(true)
     // map.on('mousedown', mouseDown)
     map.on('mousemove', onHoverBuilding)
     map.on('click', function (e) {
       onSelectBuilding(e.point)
+    })
+    map.on('dragend', function (e) {
+      console.log('end dragging')
+    })
+    map.on('zoomend', function (e) {
+      console.log('end zooming')
     })
 
     geocoder.on('result', function (e) {
