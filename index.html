@@ -17,7 +17,7 @@
     margin:0; 
     padding:0; }
 
-    #map { position:absolute; top:0; bottom:300px; right: 0; width:75%; }
+    #map { position:absolute; top:0; bottom:350px; right: 0; width:75%; }
     #header {position: relative; min-height: 50px; background-color: #245f7b; color: #fff;}
     .brand {
       font-size: 2rem;
@@ -26,7 +26,25 @@
     #geocoder { margin-top: 20px; }
     #content { position: absolute; margin-top: 50px; bottom: 0; left: 0; right: 0; top: 0; margin-bottom: 35px;}
     #options { position: absolute; top:0; bottom: 0; width:25%; overflow-y: scroll;}
-    #table { position: absolute; height: 300px; bottom: 0; right: 0; width: 75%; overflow-y: scroll;}
+    #table { position: absolute; height: 350px; bottom: 0; right: 0; width: 75%; overflow-y: scroll; font-size: 90%;}
+    #table thead tr {
+      vertical-align: bottom;
+    }
+    #table tbody tr {
+      vertical-align: top;
+    }
+    #table td, #table th {
+      padding: 0 5px;
+    }
+
+    .mapboxgl-popup-content p {
+      margin-bottom: 0;
+    }
+
+    table {
+      border-spacing: 0;
+      width:100%;
+    }
     #footer { position: absolute; bottom: 0; min-height: 35px; left: 0; right: 0;}
     .text-center {
       text-align: center;
@@ -151,8 +169,9 @@
       text-align: left;
       font-style: italic;
     }
+
     td.status_date {
-      min-width: 75px;
+      min-width: 80px;
     }
 
     tfoot {
@@ -187,7 +206,8 @@
   <div id='content'>
     <div id='map' class='table-hidden'></div>
     <div id='table' class='table-hidden'>
-      <table>
+      <div class='table-wrapper'>
+      <table id='relatedRecords'>
         <!-- IMPORTANT, class="list" have to be at tbody -->
         <thead>
           <th>Issuing Department</th>
@@ -200,18 +220,9 @@
           <th>Description</th>
         </thead>
         <tbody class='list'>
-          <tr>
-            <td class='dept'></td>
-            <td class='id'></td>
-            <td class='parcel'></td>
-            <td class='address'></td>
-            <td class='record_type'></td>
-            <td class='status'></td>
-            <td class='status_date'></td> 
-            <td class='description'></td>
-          </tr>
         </tbody>
       </table>
+      </div>
     </div>
     <div id='options'>
       <div class='inner-margin'>
@@ -250,9 +261,10 @@
   <script src="//cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
   <script>
   mapboxgl.accessToken = 'pk.eyJ1IjoiZ2VvamFzb24iLCJhIjoiY2l1NTNlYmIwMGh1dTJ5bzFmYWM4Z3M2aSJ9.JxA6SSvoURhQYi7gbmbZFg'
+  var center = [-122.41840239268754, 37.778666100153075]
   var map = new mapboxgl.Map({
     style: 'mapbox://styles/mapbox/light-v9',
-    center: [-122.41840239268754, 37.778666100153075],
+    center,
     zoom: 16,
     pitch: 60,
     bearing: 36,
@@ -265,26 +277,85 @@
     proximity: {
       longitude: -122.41840239268754,
       latitude: 37.778666100153075
-    }
+    },
+    country: 'US'
   })
 
   document.getElementById('geocoder').appendChild(geocoder.onAdd(map))
   // constants
   var BASE_API = 'https://data.sfgov.org/resource/'
-  var BUILDINGS_ID = '2s2t-jwzp'
-  var ADDRESSES_ID = 'c59h-mc8k'
-  var PARCELS_ID = '3iun-6we5'
-  var PERMITS_ID = 'vy2q-29it'
-  var CASES_ID = 'uqai-dcpf'
-  var ENERGY_ID = '75rg-imyz'
-  var ZONING_ID = '8br2-hhp3'
-  var LANDUSE_ID = 'a2rp-pwkh'
-  var FIRINS_ID = 'vygc-d77z'
-  var FIRVIO_ID = 'x75j-u3wx'
-  var BLDVIO_ID = 'jfcn-py3d'
-  var FIRCOM_ID = 'v3w9-dyka'
-  var BLDCOM_ID = 'frbs-hx9j'
-  var CITYFAC_ID = 'i5wr-crji'
+
+  var DATASETS = {
+    'fireinspections': {
+      id: 'vygc-d77z',
+      geometry: 'location'
+    },
+    'buildings': {
+      id: '2s2t-jwzp',
+      geometry: 'the_geom'
+    },
+    'addresses': {
+      id: 'c59h-mc8k',
+      geometry: 'location'
+    },
+    'parcels': {
+      id: '3iun-6we5',
+      geometry: 'geometry',
+      parcel: 'blklot'
+    },
+    'bldgpermits': {
+      id: 'vy2q-29it',
+      geometry: 'location',
+      parcel: 'block||lot'
+    },
+    'plancases': {
+      id: 'uqai-dcpf',
+      geometry: 'the_geom',
+      parcel: 'apn'
+    },
+    'energy': {
+      id: '75rg-imyz',
+      geometry: 'full_address',
+      parcel: 'parcel_s',
+      pattern: 'block_num/lot_num'
+    },
+    'zoning': {
+      id: '8br2-hhp3',
+      geometry: 'geometry'
+    },
+    'landuse': {
+      id: 'a2rp-pwkh',
+      geometry: 'the_geom'
+    },
+    'dbiviolations': {
+      id: 'jfcn-py3d',
+      geometry: 'location',
+      parcel: 'block||lot'
+    },
+    'fireviolations': {
+      id: 'x75j-u3wx',
+      geometry: 'location'
+    },
+    'firecomplaints': {
+      id: 'v3w9-dyka',
+      geometry: 'location'
+    },
+    'dbicomplaints': {
+      id: 'frbs-hx9j',
+      geometry: 'location',
+      parcel: 'block||lot'
+    },
+    'cityfacilities': {
+      id: 'i5wr-crji',
+      geometry: 'geom',
+      parcel: 'block_lot'
+    },
+    'propertyrolls': {
+      id: 'fk72-cxc3',
+      geometry: 'location',
+      parcel: 'block_and_lot_number'
+    }
+  }
 
   var USECODES = {
     'cie': 'Cultural, Institutional, Educational',
@@ -306,8 +377,6 @@
 
   // state variables
   var state = {}
-  var isDragging
-  var buildingData
   var emptyGeojson = {
     "type": "FeatureCollection",
     "features": []
@@ -318,13 +387,8 @@
     anchor: 'top-left',
     offset: 10
   })
-  var parcelArray = []
-  var footprintWKT = ''
-  var addressWKT = ''
 
   function addBuildings (data) {
-    buildingData = data
-
     map
     .addSource('buildings', {
       'type': 'geojson',
@@ -358,6 +422,7 @@
       'id': 'buildings-2d',
       'type': 'fill',
       'source': 'buildings',
+      'minzoom': 15,
       'paint': {
         'fill-color': '#aaa',
         'fill-opacity': 0
@@ -367,6 +432,7 @@
       'id': 'highlighted_fill',
       'type': 'line',
       'source': 'highlight',
+      'minzoom': 15,
       'paint': {
         'line-color': 'orange'
       }
@@ -375,6 +441,7 @@
       'id': 'highlighted_extrusion',
       'type': 'fill-extrusion',
       'source': 'highlight',
+      'minzoom': 15,
       'paint': {
         'fill-extrusion-color': 'orange',
         'fill-extrusion-height': {
@@ -388,6 +455,7 @@
       'id': 'selected_fill',
       'type': 'fill',
       'source': 'selected',
+      'minzoom': 15,
       'paint': {
         'fill-color': 'red'
       }
@@ -396,6 +464,7 @@
       'id': 'selected_extrusion',
       'type': 'fill-extrusion',
       'source': 'selected',
+      'minzoom': 15,
       'paint': {
         'fill-extrusion-color': 'red',
         'fill-extrusion-height': {
@@ -405,8 +474,10 @@
         'fill-extrusion-opacity': 0.5
       }
     })
+  }
 
-    map.setLayoutProperty('building', 'visibility', 'none')
+  function updateBuildings (data) {
+    map.getSource('buildings').setData(data)
   }
 
   function searchForArray (haystack, needle) {
@@ -421,31 +492,22 @@
     return -1
   }
 
-  function updateBuildings (data) {
-    // adapted from https://github.com/stamen/merge-geojson-features/blob/master/index.js for merging features
-    /*
-    features = data['features'].concat(buildingData['features'])
-    var seen = []
-    features = features.filter(function(x) {
-      if (x.id) {
-        if (seen.indexOf(x.id) > -1) {
-          return false
-        }
-        seen.push(x.id)
-      }
-      return true
-    })
-
-    data['features'] = features
-    */
-    buildingData = data
-    map.getSource('buildings').setData(data)
-  }
-
-  function fetchDataByWKT (name, id, geomName, wkt, data, query) {
+  function fetchData (q, name, data) {
+    name = name || 'data'
     data = data || {}
-    query = '&' + (query || '')
-    return fetch(BASE_API + id + '.json?$where=intersects(' + geomName + ',"' + wkt + '")' + query)
+    var resType = q['return'] || 'json'
+    var baseQuery = BASE_API + q['id'] + '.' + resType + '?$select=*'
+    baseQuery += (q.parcel && q.parcel !== 'parcel') ? ',' + q.parcel + '+as+parcel' : ''
+    baseQuery += (q.geometry && q.geometry !== 'geometry') ? ',' + q.geometry + '+as+geometry' : ''
+
+    // where statement, either by geometry or parcel ID
+    var alt = typeof q.pattern !== 'undefined'
+    baseQuery += q.wkt ? '&$where=intersects(geometry,"' + q.wkt + '")' : '&$where=' + whereParcelEq(alt)
+
+    // additional optional query string
+    baseQuery += q.query ? '&' + q.query : ''
+
+    return fetch(baseQuery)
     .then( function (res) {
       return res.json().then(function (json) {
         return Object.assign({}, data, {
@@ -455,17 +517,18 @@
     })
   }
 
-  function fetchDataByAttributes (name, id, where, data, query) {
-    data = data || {}
-    query = '&' + (query || '')
-    return fetch(BASE_API + id + '.json?$where=' + where + query)
-    .then( function (res) {
-      return res.json().then(function (json) {
-        return Object.assign({}, data, {
-          [name]: json
-        })
-      })
-    })
+  function whereParcelEq (alt) {
+    if (alt) return whereParcelBlockSlashLot()
+
+    return state.parcels.map(function (parcel) {
+      return 'parcel="' + parcel.blklot + '"'
+    }).join('+or+')
+  }
+
+  function whereParcelBlockSlashLot () {
+    return state.parcels.map(function (parcel) {
+      return 'parcel="' + parcel.block_num + '/' + parcel.lot_num + '"'
+    }).join('+or+')
   }
 
   function wktFromPolygon (data, geomName) {
@@ -492,17 +555,17 @@
     return WKT
   }
 
-  function normalizeRecords (values) {
+  function normalizePermitRecords (values) {
     var date
     var normalized = values.map(function (rec, idx) {
       if (rec['permit_number']) {
         var address = rec['street_number'] + (rec['street_number_suffix'] ? rec['street_number_suffix'] + ' ' : ' ') + rec['street_name'] + ' ' + rec['street_suffix']
         date = rec['status_date'] ? rec['status_date'].split('T')[0] : ' unknown'
         return {
-          id: rec['permit_number'],
+          record_id: rec['permit_number'],
           parcel: rec['block'] + rec['lot'],
           address,
-          dept: 'Building Inspection',
+          issuing_department: 'Building Inspection',
           record_type: rec['permit_type_definition'],
           status: rec['status'],
           status_date: date,
@@ -511,10 +574,10 @@
       } else {
         date = rec['record_status_date'] ? rec['record_status_date'].substr(0, 4) + '-' + rec['record_status_date'].substr(4, 2) + '-' + rec['record_status_date'].substr(6, 2) : ' unknown'
         return {
-          id: rec['record_id'],
+          record_id: rec['record_id'],
           parcel: rec['apn'],
           address: rec['address'],
-          dept: 'Planning',
+          issuing_department: 'Planning',
           record_type: rec['record_type'],
           status: rec['record_status'],
           status_date: date,
@@ -523,14 +586,31 @@
       }
     })
 
-    loadTable(normalized)
+    return normalized
   }
 
-  function loadTable (records) {
+  function renderTable (records) {
+    var tableElem = document.querySelector('#table')
+    var mapElem = document.querySelector('#map')
+    tableElem.classList.remove('table-hidden')
+    mapElem.classList.remove('table-hidden')
+
+    var keys = Object.keys(records[0])
+
+    var headers = '<tr>' + keys.map(function (key) {
+      return '<th class=' + key + '>' + key + '</th>'
+    }).join('') + '</tr>'
+
+    var template = '<tr>' + keys.map(function (key) {
+      return '<td class=' + key + '></td>'
+    }).join('') + '</tr>'
+
     var options = {
-      valueNames: [ 'id', 'parcel', 'address', 'dept', 'record_type', 'status', 'status_date', 'description' ]
+      valueNames: keys,
+      item: template
     }
 
+    document.querySelector('#relatedRecords thead').innerHTML = headers
     var table = new List('table', options)
     table.clear()
     table.add(records)
@@ -539,81 +619,59 @@
     })
   }
 
-  function tilt (on) {
-    var pitch = !on ? 0 : 60
-
-    if (!on) {
-      map.setPaintProperty('buildings-3d', 'fill-extrusion-opacity', 0)
-      map.setPaintProperty('buildings-2d', 'fill-opacity', 0.8)
-      // map.setPaintProperty('highlighted_extrusion', 'fill-extrusion-opacity', 0)
-    } else {
-      map.setPaintProperty('buildings-3d', 'fill-extrusion-opacity', 0.8)
-      map.setPaintProperty('buildings-2d', 'fill-opacity', 0)
-      // map.setPaintProperty('highlighted_extrusion', 'fill-extrusion-opacity', .5)
-    }
-
-    map.easeTo({pitch})
+  var processpermits = function(values) {
+    values = values[0].permits.concat(values[1].permits)
+    return normalizePermitRecords(values)
   }
 
-  function onMove (e) {
-    isDragging = true
+  var processpropertytax = function (values) {
+    values = values[0].propertytax
+    return values
   }
 
-  function onUp (e) {
-    if (!isDragging) return
-
-      loadData(false)
-    isDragging = false
-    map.off('mousemove', onMove)
+  var processinspections = function (values) {
+    values = values[0].inspections
+    return values
   }
 
-  function mouseDown () {
-    map.on('mousemove', onMove)
-    map.once('mouseup', onUp)
+  var processcomplaints = function (values) {
+    console.log(values)
+    return values[0].complaints
   }
 
-  var fetchPermits = function () {
-    var where = state.parcels.map(function (parcel) {
-      return 'lot="' + parcel.lot_num + '"'
-    }).join('+or+')
-    where = 'block="' + state.parcels[0].block_num + '"+and+(' + where + ')'
-    
-    return fetchDataByAttributes('permits', PERMITS_ID, where, {}, '$order=status_date+desc')
+  var processviolations = function (values) {
+    console.log(values)
+    return values[0].violations
   }
 
-  var fetchPlanningCases = function () {
-    var where = state.parcels.map(function (parcel) {
-      return 'apn="' + parcel.blklot + '"'
-    }).join('+or+')
-    return fetchDataByAttributes('permits', CASES_ID, where)
+  var processenergy = function (values) {
+    return values[0].energy
   }
 
   function onSelectRelated(type) {
     var TYPES = {
-      'permits': [fetchPermits, fetchPlanningCases],
-      'inspections': ['xxxx-xxxx']
+      'permits': ['bldgpermits', 'plancases'],
+      'inspections': ['fireinspections'],
+      'propertytax': ['propertyrolls'],
+      'complaints': ['dbicomplaints','firecomplaints'],
+      'violations': ['dbiviolations','fireviolations'],
+      'energy': ['energy']
     }
-    
-    var promises = TYPES[type].map(function(fn) {
-      return fn()
-    })
-
-    Promise.all(promises)
-      .then(function (values) {
-        console.log(values)
-      })
-    /*
-    Promise.all([
-      fetchPermits(json),
-      fetchPlanningCases(json)])
+    var cb = 'process' + type
+    Promise.all(TYPES[type].map(function (param) {
+      var q = DATASETS[param]
+      if (!q.parcel) q.wkt = state.parcelIntersect
+      return fetchData(q, type)
+    }))
     .then(function (values) {
-      var combined = values[0].concat(values[1])
-      console.log(combined)
-      normalizeRecords(combined)
-    })
+      if (typeof window[cb] === 'function') return window[cb](values)
 
-    Promise.all(TYPES[type])
-      .then()*/
+      return values[0][type]
+    })
+    .then(function (json){
+      console.log(json)
+      renderTable(json)
+    })
   }
 
   function onHoverBuilding (e) {
@@ -642,58 +700,78 @@
     }
   }
 
-  var fetchAddresses = function (wkt, data, query) {
-    query = query || '$order=address,unit_number'
-    return fetchDataByWKT('addresses', ADDRESSES_ID, 'location', wkt, data, query)
-  }
-
-  var fetchParcels = function (wkt, data, query) {
-    query = query || '$order=map_add+desc'
-    return fetchDataByWKT('parcels', PARCELS_ID, 'geometry', wkt, data, query)
-  }
-
-  var fetchPermitsEnt = function () {
-    console.log(state)
-  }
-
-  function onSelectBuilding (point) {
+  function queryFeatures (point) {
     var features = map.queryRenderedFeatures(point, {layers: ['buildings-3d']})
-    var ft = features[0]
+    return features[0]
+  }
+
+  function onSelectBuilding (ft) {
     if (ft) {
       map.getSource('selected').setData(ft)
       map.getSource('highlight').setData(emptyGeojson)
-      var wktFootprint = wellknown.stringify(ft)
-      
-      fetchAddresses(wktFootprint)
+      var addresses = DATASETS['addresses']
+      addresses.wkt = wellknown.stringify(ft)
+      addresses.query = '$order=address,unit_number'
+      var parcels = DATASETS['parcels']
+      parcels.query = '$order=map_add+desc'
+
+      fetchData(addresses, 'addresses')
       .then(function (json) {
-        var wktAddress = json.addressIntersect = wktFromPoints(json.addresses, 'location')
-        if (!wktAddress) {
-          wktAddress = wellknown.stringify(turf.centerOfMass(ft))
+        parcels.wkt = json.addressIntersect = wktFromPoints(json.addresses, 'location')
+        if (!parcels.wkt) {
+          parcels.wkt = wellknown.stringify(turf.centerOfMass(ft))
         }
         if (typeof json.addressIntersect === 'string') {
-          return fetchParcels(wktAddress, json)
+          return fetchData(parcels, 'parcels', json)
         } else {
-          return fetchParcels(wktAddress, json).then(function (json) {
-            json.parcelIntersect = wktFromPolygon(json.parcels[0], 'geometry')
-            json.addressIntersect = wktAddress
-            return fetchAddresses(json.parcelIntersect, json)
+          return fetchData(parcels, 'parcels', json).then(function (json) {
+            addresses.wkt = json.parcelIntersect = wktFromPolygon(json.parcels[0], 'geometry')
+            json.addressIntersect = parcels.wkt
+            return fetchData(addresses, 'addresses', json)
           })
         }
       })
       .then(function (json) {
         json.parcelIntersect = json.parcelIntersect || wktFromPolygon(json.parcels[0], 'geometry')
+        var landuse = DATASETS['landuse']
+        var zoning = DATASETS['zoning']
+        var facility = DATASETS['cityfacilities']
+        landuse.wkt = zoning.wkt = json.addressIntersect
+        facility.wkt = json.parcelIntersect
         Promise.all([
-          fetchDataByWKT('landuse', LANDUSE_ID, 'the_geom', json.addressIntersect),
-          fetchDataByWKT('zoning', ZONING_ID, 'geometry', json.addressIntersect),
-          fetchDataByWKT('facility', CITYFAC_ID, 'geom', json.parcelIntersect)
-          ]).then(function (values) {
-            return Object.assign({}, json, values[0], values[1], values[2], {'building': ft['properties']})
-          }).then(function(json) {
-            state = Object.assign({}, state, json)
-            console.log(state)
-            renderBuildingInfo(json)
-         })
+          fetchData(landuse, 'landuse'),
+          fetchData(zoning, 'zoning'),
+          fetchData(facility, 'facility')
+        ])
+        .then(function (values) {
+          return Object.assign({}, json, values[0], values[1], values[2], {'building': ft['properties']})
         })
+        .then(function(json) {
+          state = Object.assign({}, state, json)
+          renderBuildingInfo(json)
+        })
+      })
+    }
+  }
+
+  function tilt (on) {
+    var pitch = !on ? 0 : 60
+
+    if (!on) {
+      map.setPaintProperty('buildings-3d', 'fill-extrusion-opacity', 0)
+      map.setPaintProperty('buildings-2d', 'fill-opacity', 0.8)
+    } else {
+      map.setPaintProperty('buildings-3d', 'fill-extrusion-opacity', 0.8)
+      map.setPaintProperty('buildings-2d', 'fill-opacity', 0)
+    }
+
+    map.easeTo({pitch})
+  }
+
+  function updateOnMove (e) {
+    if (turf.distance(center, map.getCenter().toArray(), 'miles') >= .75) {
+      center = map.getCenter().toArray()
+      loadData(false)
     }
   }
 
@@ -702,6 +780,11 @@
     var sections = []
     // Buttons
     sections.push(renderButton('Show permits and entitlements', 'permits'))
+    sections.push(renderButton('Show historic property tax rolls', 'propertytax'))
+    sections.push(renderButton('Show complaints', 'complaints'))
+    sections.push(renderButton('Show inspections', 'inspections'))
+    sections.push(renderButton('Show violations', 'violations'))
+    sections.push(renderButton('Show energy performance', 'energy'))
 
     // General Characteristics info
     var building = data.building
@@ -778,7 +861,7 @@
     var buffered = turf.buffer(poly, 0.5, 'miles')
     var bbox = turf.bbox(buffered)
     // Socrata API returns the numeric columns as strings, we have to cast the ones we want to use in the extrusion as float
-    fetch('https://data.sfgov.org/resource/2s2t-jwzp.geojson?$select=sf16_bldgid+as+id,hgt_median_m,hgt_maxcm/100+as+height,the_geom&$limit=1000000000&$where=within_box(the_geom,' + bbox[1] + ', ' + bbox[0] + ', ' + bbox[3] + ', ' + bbox[2] + ')&$order=objectid').then(function (response) {
+    fetch('https://data.sfgov.org/resource/2s2t-jwzp.geojson?$select=sf16_bldgid+as+id,hgt_median_m,hgt_maxcm/100+as+height,the_geom&$limit=10000000&$where=within_box(the_geom,' + bbox[1] + ', ' + bbox[0] + ', ' + bbox[3] + ', ' + bbox[2] + ')&$order=objectid').then(function (response) {
       response.json().then(function (json) {
         json['features'] = json['features'].map(function (feature, idx) {
           feature.properties.height = parseFloat(feature.properties.height)
@@ -791,37 +874,37 @@
   // the 'building' layer in the mapbox-streets vector source contains building-height
   // data from OpenStreetMap.
   map.on('load', function () {
+    map.setLayoutProperty('building', 'visibility', 'none')
+    map.setPaintProperty('parks', 'fill-color', '#A5DC86')
     loadData(true)
-    // map.on('mousedown', mouseDown)
+
     map.on('mousemove', onHoverBuilding)
     map.on('click', function (e) {
-      onSelectBuilding(e.point)
+      onSelectBuilding(queryFeatures(e.point))
     })
-    map.on('dragend', function (e) {
-      console.log('end dragging')
-    })
-    map.on('zoomend', function (e) {
-      console.log('end zooming')
-    })
+    map.on('dragend', updateOnMove)
+    map.on('zoomend', updateOnMove)
+  })
 
-    geocoder.on('result', function (e) {
+  geocoder.on('result', function (e) {
       console.log(e)
       var geocodeWKT = wellknown.stringify(e.result.geometry)
-
-      fetchDataByWKT('building', BUILDINGS_ID, 'the_geom', geocodeWKT, false, '$select=sf16_bldgid+as+id,hgt_median_m,hgt_maxcm/100+as+height,the_geom')
-      .then(function(json) {
-        console.log(json)
-        map.getSource('selected')
-        .setData({
-          type: 'Feature',
-          geometry: json.building[0].the_geom, 
-          properties: { 
-            height: parseFloat(json.building[0].height)
-          }
+      fetch(BASE_API + DATASETS['addresses'].id + '.geojson?$select=*,lower(address)&$where=lower_address="' + e.result.address + ' ' + e.result.text.toLowerCase() + '"')
+      .then(function (res) {
+        res.json().then(function (json) {
+          console.log(json)
+          fetch(BASE_API + DATASETS['buildings'].id + '.geojson?$select=sf16_bldgid+as+id,hgt_median_m,hgt_maxcm/100+as+height,the_geom&$where=intersects(the_geom, "' + wellknown.stringify(json.features[0]) + '")')
+          .then(function (res) {
+            res.json().then(function (json) {
+              if (json.features.length > 0) {
+                json.features[0].properties.height = Number(json.features[0].properties.height)
+                onSelectBuilding(json.features[0]) 
+              }
+            })
+          })
         })
       })
     })
-  })
 </script>
 
 </body>
