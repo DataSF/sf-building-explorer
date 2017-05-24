@@ -1,39 +1,88 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <meta charset='utf-8' />
   <title>San Francisco Buildings</title>
   <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
   <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.37.0/mapbox-gl.css' rel='stylesheet' />
-  <link rel='stylesheet' href='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v2.1.0/mapbox-gl-geocoder.css' type='text/css' />
+  <link rel='stylesheet' href='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v2.1.0/mapbox-gl-geocoder.css'
+    type='text/css' />
   <link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/7.0.0/normalize.min.css' rel='stylesheet' />
   <link href='https://cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.min.css' rel='stylesheet' />
   <style>
-  body {
-    font-size: 1.5em; /* currently ems cause chrome bug misinterpreting rems on body element */
-    line-height: 1.6;
-    font-family: -apple-system,system-ui,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
-    color: #222;
-    margin:0; 
-    padding:0; }
+    body {
+      font-size: 1.5em;
+      /* currently ems cause chrome bug misinterpreting rems on body element */
+      line-height: 1.6;
+      font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      color: #222;
+      margin: 0;
+      padding: 0;
+    }
 
-    #map { position:absolute; top:0; bottom:350px; right: 0; width:75%; }
-    #header {position: relative; min-height: 50px; background-color: #245f7b; color: #fff;}
+    #map {
+      position: absolute;
+      top: 0;
+      bottom: 350px;
+      right: 0;
+      width: 75%;
+    }
+
+    #header {
+      position: relative;
+      min-height: 50px;
+      background-color: #245f7b;
+      color: #fff;
+    }
+
     .brand {
       font-size: 2rem;
       line-height: 50px;
     }
-    #geocoder { margin-top: 20px; }
-    #content { position: absolute; margin-top: 50px; bottom: 0; left: 0; right: 0; top: 0; margin-bottom: 35px;}
-    #options { position: absolute; top:0; bottom: 0; width:25%; overflow-y: scroll;}
-    #table { position: absolute; height: 350px; bottom: 0; right: 0; width: 75%; overflow-y: scroll; font-size: 90%;}
+
+    #geocoder {
+      margin-top: 20px;
+    }
+
+    #content {
+      position: absolute;
+      margin-top: 50px;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      top: 0;
+      margin-bottom: 35px;
+    }
+
+    #options {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 25%;
+      overflow-y: scroll;
+    }
+
+    #table {
+      position: absolute;
+      height: 350px;
+      bottom: 0;
+      right: 0;
+      width: 75%;
+      overflow-y: scroll;
+      font-size: 90%;
+    }
+
     #table thead tr {
       vertical-align: bottom;
     }
+
     #table tbody tr {
       vertical-align: top;
     }
-    #table td, #table th {
+
+    #table td,
+    #table th {
       padding: 0 5px;
     }
 
@@ -43,22 +92,33 @@
 
     table {
       border-spacing: 0;
-      width:100%;
+      width: 100%;
     }
-    #footer { position: absolute; bottom: 0; min-height: 35px; left: 0; right: 0;}
+
+    #footer {
+      position: absolute;
+      bottom: 0;
+      min-height: 35px;
+      left: 0;
+      right: 0;
+    }
+
     .text-center {
       text-align: center;
     }
+
     button {
       width: 100%;
       margin-bottom: 0;
       margin-top: 1rem;
     }
+
     #footer .made-in {
       background-color: #245f7b;
       color: #fff;
       padding: 5px 0;
     }
+
     .switch-field {
       padding: 20px 0;
       overflow: hidden;
@@ -96,17 +156,17 @@
       -webkit-box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px rgba(255, 255, 255, 0.1);
       box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px rgba(255, 255, 255, 0.1);
       -webkit-transition: all 0.1s ease-in-out;
-      -moz-transition:    all 0.1s ease-in-out;
-      -ms-transition:     all 0.1s ease-in-out;
-      -o-transition:      all 0.1s ease-in-out;
-      transition:         all 0.1s ease-in-out;
+      -moz-transition: all 0.1s ease-in-out;
+      -ms-transition: all 0.1s ease-in-out;
+      -o-transition: all 0.1s ease-in-out;
+      transition: all 0.1s ease-in-out;
     }
 
     .switch-field label:hover {
       cursor: pointer;
     }
 
-    .switch-field input:checked + label {
+    .switch-field input:checked+label {
       background-color: #A5DC86;
       -webkit-box-shadow: none;
       box-shadow: none;
@@ -120,19 +180,41 @@
       border-radius: 0 4px 4px 0;
     }
 
-    h1, h2, h3, h4, h5, h6 {
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
       margin-bottom: 0;
       letter-spacing: 0;
       margin-top: 1.5rem;
       font-weight: 500;
     }
 
-    h1 { font-size: 2.6rem; }
-    h2 { font-size: 2.0rem; }
-    h3 { font-size: 3.0em; }
-    h4 { font-size: 2.4em; }
-    h5 { font-size: 1.8em; }
-    h6 { font-size: 1.5em; }
+    h1 {
+      font-size: 2.6rem;
+    }
+
+    h2 {
+      font-size: 2.0rem;
+    }
+
+    h3 {
+      font-size: 3.0em;
+    }
+
+    h4 {
+      font-size: 2.4em;
+    }
+
+    h5 {
+      font-size: 1.8em;
+    }
+
+    h6 {
+      font-size: 1.5em;
+    }
 
     #buildingInfo h1 {
       margin-top: 0;
@@ -142,8 +224,16 @@
       border-bottom: thin solid black;
     }
 
-    .inner-margin { margin-left: 15px; margin-right: 15px; }
-    .mapboxgl-ctrl-geocoder { max-width: none; width: 100%; }
+    .inner-margin {
+      margin-left: 15px;
+      margin-right: 15px;
+    }
+
+    .mapboxgl-ctrl-geocoder {
+      max-width: none;
+      width: 100%;
+    }
+
     table {
       width: 100%;
     }
@@ -153,7 +243,8 @@
       margin-top: 10px;
     }
 
-    table.small-table th, table.small-table td {
+    table.small-table th,
+    table.small-table td {
       padding: 0;
     }
 
@@ -177,12 +268,15 @@
     tfoot {
       font-style: italic;
     }
+
     label {
       display: inline;
     }
+
     ul.not-styled {
       list-style: none;
     }
+
     ul.not-styled li {
       margin-bottom: 0;
     }
@@ -194,9 +288,21 @@
     #table.table-hidden {
       display: none;
     }
-
+    .no-records-message {
+      display: none;
+      text-align: center;
+      font-size: 2em;
+      margin-top: 30px;
+    }
+    .no-records .no-records-message {
+      display: block;
+    }
+    .no-records .table-wrapper {
+      display: none;
+    }
   </style>
 </head>
+
 <body>
   <div id='header'>
     <div class='inner-margin'>
@@ -206,22 +312,17 @@
   <div id='content'>
     <div id='map' class='table-hidden'></div>
     <div id='table' class='table-hidden'>
+      <div class='no-records-message'>
+        No related records for this building
+      </div>
       <div class='table-wrapper'>
-      <table id='relatedRecords'>
-        <!-- IMPORTANT, class="list" have to be at tbody -->
-        <thead>
-          <th>Issuing Department</th>
-          <th>Record ID</th>
-          <th>Parcel</th>
-          <th>Address</th>
-          <th>Record Type</th>
-          <th>Status</th>
-          <th>Status Date</th>
-          <th>Description</th>
-        </thead>
-        <tbody class='list'>
-        </tbody>
-      </table>
+        <table id='relatedRecords'>
+          <!-- IMPORTANT, class="list" have to be at tbody -->
+          <thead>
+          </thead>
+          <tbody class='list'>
+          </tbody>
+        </table>
       </div>
     </div>
     <div id='options'>
@@ -260,652 +361,790 @@
   <script src="wellknown.js" charset="utf-8"></script>
   <script src="//cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
   <script>
-  mapboxgl.accessToken = 'pk.eyJ1IjoiZ2VvamFzb24iLCJhIjoiY2l1NTNlYmIwMGh1dTJ5bzFmYWM4Z3M2aSJ9.JxA6SSvoURhQYi7gbmbZFg'
-  var center = [-122.41840239268754, 37.778666100153075]
-  var map = new mapboxgl.Map({
-    style: 'mapbox://styles/mapbox/light-v9',
-    center,
-    zoom: 16,
-    pitch: 60,
-    bearing: 36,
-    container: 'map'
-  })
+    mapboxgl.accessToken = 'pk.eyJ1IjoiZ2VvamFzb24iLCJhIjoiY2l1NTNlYmIwMGh1dTJ5bzFmYWM4Z3M2aSJ9.JxA6SSvoURhQYi7gbmbZFg'
+    var center = [-122.41840239268754, 37.778666100153075]
+    var map = new mapboxgl.Map({
+      style: 'mapbox://styles/mapbox/light-v9',
+      center,
+      zoom: 16,
+      pitch: 60,
+      bearing: 36,
+      container: 'map'
+    })
 
-  var geocoder = new MapboxGeocoder({
-    accessToken: mapboxgl.accessToken,
-    placeholder: 'Search map by address',
-    proximity: {
-      longitude: -122.41840239268754,
-      latitude: 37.778666100153075
-    },
-    country: 'US'
-  })
+    var geocoder = new MapboxGeocoder({
+      accessToken: mapboxgl.accessToken,
+      placeholder: 'Search map by address',
+      proximity: {
+        longitude: -122.41840239268754,
+        latitude: 37.778666100153075
+      },
+      country: 'US'
+    })
 
-  document.getElementById('geocoder').appendChild(geocoder.onAdd(map))
-  // constants
-  var BASE_API = 'https://data.sfgov.org/resource/'
+    document.getElementById('geocoder').appendChild(geocoder.onAdd(map))
+    // constants
+    var BASE_API = 'https://data.sfgov.org/resource/'
 
-  var DATASETS = {
-    'fireinspections': {
-      id: 'vygc-d77z',
-      geometry: 'location'
-    },
-    'buildings': {
-      id: '2s2t-jwzp',
-      geometry: 'the_geom'
-    },
-    'addresses': {
-      id: 'c59h-mc8k',
-      geometry: 'location'
-    },
-    'parcels': {
-      id: '3iun-6we5',
-      geometry: 'geometry',
-      parcel: 'blklot'
-    },
-    'bldgpermits': {
-      id: 'vy2q-29it',
-      geometry: 'location',
-      parcel: 'block||lot'
-    },
-    'plancases': {
-      id: 'uqai-dcpf',
-      geometry: 'the_geom',
-      parcel: 'apn'
-    },
-    'energy': {
-      id: '75rg-imyz',
-      geometry: 'full_address',
-      parcel: 'parcel_s',
-      pattern: 'block_num/lot_num'
-    },
-    'zoning': {
-      id: '8br2-hhp3',
-      geometry: 'geometry'
-    },
-    'landuse': {
-      id: 'a2rp-pwkh',
-      geometry: 'the_geom'
-    },
-    'dbiviolations': {
-      id: 'jfcn-py3d',
-      geometry: 'location',
-      parcel: 'block||lot'
-    },
-    'fireviolations': {
-      id: 'x75j-u3wx',
-      geometry: 'location'
-    },
-    'firecomplaints': {
-      id: 'v3w9-dyka',
-      geometry: 'location'
-    },
-    'dbicomplaints': {
-      id: 'frbs-hx9j',
-      geometry: 'location',
-      parcel: 'block||lot'
-    },
-    'cityfacilities': {
-      id: 'i5wr-crji',
-      geometry: 'geom',
-      parcel: 'block_lot'
-    },
-    'propertyrolls': {
-      id: 'fk72-cxc3',
-      geometry: 'location',
-      parcel: 'block_and_lot_number'
+    var DATASETS = {
+      'fireinspections': {
+        id: 'vygc-d77z',
+        geometry: 'location',
+        select: {
+          '"Fire"': 'department',
+          'address': 'address',
+          '"BFP District "||bfp_district': 'assigned_to',
+          'inspection_number': 'inspection_number',
+          'inspection_status': 'status',
+          'inspection_start_date': 'start_date',
+          'inspection_end_date': 'end_date',
+          'inspection_type_description': 'description'
+        }
+      },
+      'buildings': {
+        id: '2s2t-jwzp',
+        geometry: 'the_geom'
+      },
+      'addresses': {
+        id: 'c59h-mc8k',
+        geometry: 'location'
+      },
+      'parcels': {
+        id: '3iun-6we5',
+        geometry: 'geometry',
+        parcel: 'blklot'
+      },
+      'bldgpermits': {
+        id: 'vy2q-29it',
+        geometry: 'location',
+        parcel: 'block||lot',
+        select: {
+          'permit_number': 'record_id',
+          'street_number||" "||street_name||" "||street_suffix': 'address',
+          '"Building Inspection"': 'issuing_department',
+          'permit_type_definition': 'record_type',
+          'status': 'status',
+          'status_date': 'status_date',
+          'description': 'description'
+        }
+      },
+      'plancases': {
+        id: 'uqai-dcpf',
+        geometry: 'the_geom',
+        parcel: 'apn',
+        select: {
+          'record_id': 'record_id',
+          'address': 'address',
+          '"Planning"': 'issuing_department',
+          'record_type': 'record_type',
+          'record_status': 'status',
+          'record_status_date': 'status_date',
+          'description': 'description'
+        }
+      },
+      'energy': {
+        id: '75rg-imyz',
+        geometry: 'full_address',
+        parcel: 'parcel_s',
+        pattern: 'block_num/lot_num'
+      },
+      'zoning': {
+        id: '8br2-hhp3',
+        geometry: 'geometry'
+      },
+      'landuse': {
+        id: 'a2rp-pwkh',
+        geometry: 'the_geom'
+      },
+      'dbiviolations': {
+        id: 'jfcn-py3d',
+        geometry: 'location',
+        parcel: 'block||lot',
+        select: {
+          '"Building Inspection"': 'department',
+          'street_number||" "||street_name||" "||street_suffix': 'address',
+          'assigned_division': 'assigned_to',
+          'status': 'status',
+          'date_filed': 'violation_date',
+          'nov_item_description': 'description',
+          'complaint_number||item_sequence_number': 'violation_id',
+          'complaint_number': 'inspection_or_complaint_number'
+        }
+      },
+      'fireviolations': {
+        id: 'x75j-u3wx',
+        geometry: 'location',
+        select: {
+          '"Fire"': 'department',
+          'address': 'address',
+          '"BFP District "||bfp_district': 'assigned_to',
+          'close_date': 'close_date',
+          'inspection_number': 'inspection_or_complaint_number',
+          'status': 'status',
+          'violation_date': 'violation_date',
+          'violation_item_description': 'description',
+          'violation_id': 'violation_id'
+        }
+      },
+      'firecomplaints': {
+        id: 'v3w9-dyka',
+        geometry: 'location',
+        select: {
+          '"Fire"': 'department',
+          '"BFP District "||bfp_district': 'assigned_to',
+          'complaint_item_type_description': 'description',
+          'address': 'address',
+          'complaint_number': 'complaint_number',
+          'entry_date': 'file_date',
+          'inspection_number': 'inspection_number',
+          '"Not Available"': 'parcel'
+        }
+      },
+      'dbicomplaints': {
+        id: 'frbs-hx9j',
+        geometry: 'location',
+        parcel: 'block||lot',
+        select: {
+          '"Building Inspection"': 'department',
+          'assigned_division': 'assigned_to',
+          'complaint_description': 'description',
+          'complaint_number': 'complaint_number',
+          'date_filed': 'file_date',
+          'street_number||" "||street_name||" "||street_suffix': 'address',
+          '"N/A"': 'inspection_number'
+        }
+      },
+      'cityfacilities': {
+        id: 'i5wr-crji',
+        geometry: 'geom',
+        parcel: 'block_lot'
+      },
+      'propertyrolls': {
+        id: 'fk72-cxc3',
+        geometry: 'location',
+        parcel: 'block_and_lot_number',
+        select: {
+          'closed_roll_assessed_fixtures_value': 'fixtures_value',
+          'closed_roll_assessed_improvement_value': 'improvement_value',
+          'closed_roll_assessed_land_value': 'land_value',
+          'closed_roll_assessed_personal_prop_value': 'personal_property_value',
+          'closed_roll_fiscal_year': 'closed_roll_fiscal_year',
+          'closed_roll_homeowner_exemption_value': 'homeowner_exemption_value',
+          'closed_roll_misc_exemption_value': 'misc_exemption_value',
+          'current_sales_date': 'current_sales_date',
+          'prior_sales_date': 'prior_sales_date',
+          'property_location': 'property_location',
+          'recordation_date': 'recordation_date'
+        }
+      }
     }
-  }
 
-  var USECODES = {
-    'cie': 'Cultural, Institutional, Educational',
-    'med': 'Medical',
-    'mips': 'Office (Management, Information, Professional Services)',
-    'mixed': 'Mixed Uses (Without Residential)',
-    'mixres': 'Mixed Uses (With Residential)',
-    'pdr': 'Industrial (Production, Distribution, Repair)',
-    'retail/ent': 'Retail, Entertainment',
-    'retail': 'Retail, Entertainment',
-    'resident': 'Residential',
-    'visitor': 'Hotels, Visitor Services',
-    'vacant': 'Vacant',
-    'row': 'Right-of-Way',
-    'openspace': 'Open Space'
-  }
+    var USECODES = {
+      'cie': 'Cultural, Institutional, Educational',
+      'med': 'Medical',
+      'mips': 'Office (Management, Information, Professional Services)',
+      'mixed': 'Mixed Uses (Without Residential)',
+      'mixres': 'Mixed Uses (With Residential)',
+      'pdr': 'Industrial (Production, Distribution, Repair)',
+      'retail/ent': 'Retail, Entertainment',
+      'retail': 'Retail, Entertainment',
+      'resident': 'Residential',
+      'visitor': 'Hotels, Visitor Services',
+      'vacant': 'Vacant',
+      'row': 'Right-of-Way',
+      'openspace': 'Open Space'
+    }
 
-  var USESQFT = ['cie', 'med', 'mips', 'retail', 'pdr', 'visitor']
+    var USESQFT = ['cie', 'med', 'mips', 'retail', 'pdr', 'visitor']
 
-  // state variables
-  var state = {}
-  var emptyGeojson = {
-    "type": "FeatureCollection",
-    "features": []
-  }
-  var popup = new mapboxgl.Popup({
-    closeButton: false,
-    closeOnClick: false,
-    anchor: 'top-left',
-    offset: 10
-  })
-
-  function addBuildings (data) {
-    map
-    .addSource('buildings', {
-      'type': 'geojson',
-      'data': data
-    })
-    .addSource('highlight', {
-      'type': 'geojson',
-      'data': emptyGeojson
-    })
-    .addSource('selected', {
-      'type': 'geojson',
-      'data': emptyGeojson
+    // state variables
+    var state = {}
+    var emptyGeojson = {
+      "type": "FeatureCollection",
+      "features": []
+    }
+    var popup = new mapboxgl.Popup({
+      closeButton: false,
+      closeOnClick: false,
+      anchor: 'top-left',
+      offset: 10
     })
 
-    map
-    .addLayer({
-      'id': 'buildings-3d',
-      'type': 'fill-extrusion',
-      'source': 'buildings',
-      'minzoom': 15,
-      'paint': {
-        'fill-extrusion-color': '#aaa',
-        'fill-extrusion-height': {
-          'type': 'identity',
-          'property': 'height'
-        },
-        'fill-extrusion-opacity': 0.8
-      }
-    })
-    .addLayer({
-      'id': 'buildings-2d',
-      'type': 'fill',
-      'source': 'buildings',
-      'minzoom': 15,
-      'paint': {
-        'fill-color': '#aaa',
-        'fill-opacity': 0
-      }
-    })
-    .addLayer({
-      'id': 'highlighted_fill',
-      'type': 'line',
-      'source': 'highlight',
-      'minzoom': 15,
-      'paint': {
-        'line-color': 'orange'
-      }
-    })
-    .addLayer({
-      'id': 'highlighted_extrusion',
-      'type': 'fill-extrusion',
-      'source': 'highlight',
-      'minzoom': 15,
-      'paint': {
-        'fill-extrusion-color': 'orange',
-        'fill-extrusion-height': {
-          'type': 'identity',
-          'property': 'height'
-        },
-        'fill-extrusion-opacity': 0.5
-      }
-    })
-    .addLayer({
-      'id': 'selected_fill',
-      'type': 'fill',
-      'source': 'selected',
-      'minzoom': 15,
-      'paint': {
-        'fill-color': 'red'
-      }
-    })
-    .addLayer({
-      'id': 'selected_extrusion',
-      'type': 'fill-extrusion',
-      'source': 'selected',
-      'minzoom': 15,
-      'paint': {
-        'fill-extrusion-color': 'red',
-        'fill-extrusion-height': {
-          'type': 'identity',
-          'property': 'height'
-        },
-        'fill-extrusion-opacity': 0.5
-      }
-    })
-  }
+    function addBuildings(data) {
+      map
+        .addSource('buildings', {
+          'type': 'geojson',
+          'data': data
+        })
+        .addSource('highlight', {
+          'type': 'geojson',
+          'data': emptyGeojson
+        })
+        .addSource('selected', {
+          'type': 'geojson',
+          'data': emptyGeojson
+        })
 
-  function updateBuildings (data) {
-    map.getSource('buildings').setData(data)
-  }
+      map
+        .addLayer({
+          'id': 'buildings-3d',
+          'type': 'fill-extrusion',
+          'source': 'buildings',
+          'minzoom': 15,
+          'paint': {
+            'fill-extrusion-color': '#aaa',
+            'fill-extrusion-height': {
+              'type': 'identity',
+              'property': 'height'
+            },
+            'fill-extrusion-opacity': 0.8
+          }
+        })
+        .addLayer({
+          'id': 'buildings-2d',
+          'type': 'fill',
+          'source': 'buildings',
+          'minzoom': 15,
+          'paint': {
+            'fill-color': '#aaa',
+            'fill-opacity': 0
+          }
+        })
+        .addLayer({
+          'id': 'highlighted_fill',
+          'type': 'line',
+          'source': 'highlight',
+          'minzoom': 15,
+          'paint': {
+            'line-color': 'orange'
+          }
+        })
+        .addLayer({
+          'id': 'highlighted_extrusion',
+          'type': 'fill-extrusion',
+          'source': 'highlight',
+          'minzoom': 15,
+          'paint': {
+            'fill-extrusion-color': 'orange',
+            'fill-extrusion-height': {
+              'type': 'identity',
+              'property': 'height'
+            },
+            'fill-extrusion-opacity': 0.5
+          }
+        })
+        .addLayer({
+          'id': 'selected_fill',
+          'type': 'fill',
+          'source': 'selected',
+          'minzoom': 15,
+          'paint': {
+            'fill-color': 'red'
+          }
+        })
+        .addLayer({
+          'id': 'selected_extrusion',
+          'type': 'fill-extrusion',
+          'source': 'selected',
+          'minzoom': 15,
+          'paint': {
+            'fill-extrusion-color': 'red',
+            'fill-extrusion-height': {
+              'type': 'identity',
+              'property': 'height'
+            },
+            'fill-extrusion-opacity': 0.5
+          }
+        })
+    }
 
-  function searchForArray (haystack, needle) {
-    var i, j, current
-    for (i = 0; i < haystack.length; ++i) {
-      if (needle.length === haystack[i].length) {
-        current = haystack[i]
-        for (j = 0; j < needle.length && needle[j] === current[j]; ++j) {}
+    function updateBuildings(data) {
+      map.getSource('buildings').setData(data)
+    }
+
+    function searchForArray(haystack, needle) {
+      var i, j, current
+      for (i = 0; i < haystack.length; ++i) {
+        if (needle.length === haystack[i].length) {
+          current = haystack[i]
+          for (j = 0; j < needle.length && needle[j] === current[j]; ++j) { }
           if (j === needle.length) return i
         }
+      }
+      return -1
     }
-    return -1
-  }
 
-  function fetchData (q, name, data) {
-    name = name || 'data'
-    data = data || {}
-    var resType = q['return'] || 'json'
-    var baseQuery = BASE_API + q['id'] + '.' + resType + '?$select=*'
-    baseQuery += (q.parcel && q.parcel !== 'parcel') ? ',' + q.parcel + '+as+parcel' : ''
-    baseQuery += (q.geometry && q.geometry !== 'geometry') ? ',' + q.geometry + '+as+geometry' : ''
-
-    // where statement, either by geometry or parcel ID
-    var alt = typeof q.pattern !== 'undefined'
-    baseQuery += q.wkt ? '&$where=intersects(geometry,"' + q.wkt + '")' : '&$where=' + whereParcelEq(alt)
-
-    // additional optional query string
-    baseQuery += q.query ? '&' + q.query : ''
-
-    return fetch(baseQuery)
-    .then( function (res) {
-      return res.json().then(function (json) {
-        return Object.assign({}, data, {
-          [name]: json
-        })
-      })
-    })
-  }
-
-  function whereParcelEq (alt) {
-    if (alt) return whereParcelBlockSlashLot()
-
-    return state.parcels.map(function (parcel) {
-      return 'parcel="' + parcel.blklot + '"'
-    }).join('+or+')
-  }
-
-  function whereParcelBlockSlashLot () {
-    return state.parcels.map(function (parcel) {
-      return 'parcel="' + parcel.block_num + '/' + parcel.lot_num + '"'
-    }).join('+or+')
-  }
-
-  function wktFromPolygon (data, geomName) {
-    var WKT = wellknown.stringify(data[geomName])
-    return WKT
-  }
-
-  function wktFromPoints (data, geomName) {
-    if (data.length === 0) return false
-
-      var points = []
-    if (data.length > 1) {
-      data.forEach(function (record, idx) {
-        var coords = record[geomName].coordinates
-        if (searchForArray(points, coords) === -1) {
-          points.push(coords)
-        }
-      })
-    } else {
-      points.push(data[0].location.coordinates)
+    function generateSel(select) {
+      return Object.keys(select).map(function (key) {
+        return key + '+as+' + select[key]
+      }).join(',')
     }
-    var geometry = points.length > 1 ? turf.lineString(points) : turf.point(points[0])
-    var WKT = wellknown.stringify(geometry)
-    return WKT
-  }
 
-  function normalizePermitRecords (values) {
-    var date
-    var normalized = values.map(function (rec, idx) {
-      if (rec['permit_number']) {
-        var address = rec['street_number'] + (rec['street_number_suffix'] ? rec['street_number_suffix'] + ' ' : ' ') + rec['street_name'] + ' ' + rec['street_suffix']
-        date = rec['status_date'] ? rec['status_date'].split('T')[0] : ' unknown'
-        return {
-          record_id: rec['permit_number'],
-          parcel: rec['block'] + rec['lot'],
-          address,
-          issuing_department: 'Building Inspection',
-          record_type: rec['permit_type_definition'],
-          status: rec['status'],
-          status_date: date,
-          description: rec['description']
-        }
+    function fetchData(q, name, data) {
+      name = name || 'data'
+      data = data || {}
+      var resType = q['return'] || 'json'
+      var baseQuery = BASE_API + q['id'] + '.' + resType + '?$select='
+      if (q.select) {
+        baseQuery += generateSel(q.select)
       } else {
-        date = rec['record_status_date'] ? rec['record_status_date'].substr(0, 4) + '-' + rec['record_status_date'].substr(4, 2) + '-' + rec['record_status_date'].substr(6, 2) : ' unknown'
-        return {
-          record_id: rec['record_id'],
-          parcel: rec['apn'],
-          address: rec['address'],
-          issuing_department: 'Planning',
-          record_type: rec['record_type'],
-          status: rec['record_status'],
-          status_date: date,
-          description: rec['description']
-        }
+        baseQuery += '*'
       }
-    })
+      baseQuery += (q.parcel && q.parcel !== 'parcel') ? ',' + q.parcel + '+as+parcel' : ''
+      baseQuery += (q.geometry && q.geometry !== 'geometry') ? ',' + q.geometry + '+as+geometry' : ''
 
-    return normalized
-  }
+      // where statement, either by geometry or parcel ID
+      var alt = typeof q.pattern !== 'undefined'
+      baseQuery += q.wkt ? '&$where=intersects(geometry,"' + q.wkt + '")' : '&$where=' + whereParcelEq(alt)
 
-  function renderTable (records) {
-    var tableElem = document.querySelector('#table')
-    var mapElem = document.querySelector('#map')
-    tableElem.classList.remove('table-hidden')
-    mapElem.classList.remove('table-hidden')
+      // additional optional query string
+      baseQuery += q.query ? '&' + q.query : ''
 
-    var keys = Object.keys(records[0])
-
-    var headers = '<tr>' + keys.map(function (key) {
-      return '<th class=' + key + '>' + key + '</th>'
-    }).join('') + '</tr>'
-
-    var template = '<tr>' + keys.map(function (key) {
-      return '<td class=' + key + '></td>'
-    }).join('') + '</tr>'
-
-    var options = {
-      valueNames: keys,
-      item: template
-    }
-
-    document.querySelector('#relatedRecords thead').innerHTML = headers
-    var table = new List('table', options)
-    table.clear()
-    table.add(records)
-    table.sort('status_date', {
-      order: 'desc'
-    })
-  }
-
-  var processpermits = function(values) {
-    values = values[0].permits.concat(values[1].permits)
-    return normalizePermitRecords(values)
-  }
-
-  var processpropertytax = function (values) {
-    values = values[0].propertytax
-    return values
-  }
-
-  var processinspections = function (values) {
-    values = values[0].inspections
-    return values
-  }
-
-  var processcomplaints = function (values) {
-    console.log(values)
-    return values[0].complaints
-  }
-
-  var processviolations = function (values) {
-    console.log(values)
-    return values[0].violations
-  }
-
-  var processenergy = function (values) {
-    return values[0].energy
-  }
-
-  function onSelectRelated(type) {
-    var TYPES = {
-      'permits': ['bldgpermits', 'plancases'],
-      'inspections': ['fireinspections'],
-      'propertytax': ['propertyrolls'],
-      'complaints': ['dbicomplaints','firecomplaints'],
-      'violations': ['dbiviolations','fireviolations'],
-      'energy': ['energy']
-    }
-    var cb = 'process' + type
-    Promise.all(TYPES[type].map(function (param) {
-      var q = DATASETS[param]
-      if (!q.parcel) q.wkt = state.parcelIntersect
-      return fetchData(q, type)
-    }))
-    .then(function (values) {
-      if (typeof window[cb] === 'function') return window[cb](values)
-
-      return values[0][type]
-    })
-    .then(function (json){
-      console.log(json)
-      renderTable(json)
-    })
-  }
-
-  function onHoverBuilding (e) {
-    var features = map.queryRenderedFeatures(e.point, { layers: ['buildings-2d'] });
-    var ft = features[0]
-
-    if (ft) {
-      map.getSource('highlight').setData(ft)
-    } else {
-      map.getSource('highlight').setData(emptyGeojson)
-    }
-
-    var showTooltip = ft && e.originalEvent.which===0
-
-    if (showTooltip) {
-      var html = '<strong>Building ID:</strong> ' +
-      ft.properties.id +
-      '<p>Click to select and query features</p>'
-      map.getCanvas().style.cursor = 'pointer'
-      popup.setLngLat(e.lngLat)
-      .setHTML(html)
-      .addTo(map)
-    } else {
-      map.getCanvas().style.cursor = ''
-      popup.remove()
-    }
-  }
-
-  function queryFeatures (point) {
-    var features = map.queryRenderedFeatures(point, {layers: ['buildings-3d']})
-    return features[0]
-  }
-
-  function onSelectBuilding (ft) {
-    if (ft) {
-      map.getSource('selected').setData(ft)
-      map.getSource('highlight').setData(emptyGeojson)
-      var addresses = DATASETS['addresses']
-      addresses.wkt = wellknown.stringify(ft)
-      addresses.query = '$order=address,unit_number'
-      var parcels = DATASETS['parcels']
-      parcels.query = '$order=map_add+desc'
-
-      fetchData(addresses, 'addresses')
-      .then(function (json) {
-        parcels.wkt = json.addressIntersect = wktFromPoints(json.addresses, 'location')
-        if (!parcels.wkt) {
-          parcels.wkt = wellknown.stringify(turf.centerOfMass(ft))
-        }
-        if (typeof json.addressIntersect === 'string') {
-          return fetchData(parcels, 'parcels', json)
-        } else {
-          return fetchData(parcels, 'parcels', json).then(function (json) {
-            addresses.wkt = json.parcelIntersect = wktFromPolygon(json.parcels[0], 'geometry')
-            json.addressIntersect = parcels.wkt
-            return fetchData(addresses, 'addresses', json)
-          })
-        }
-      })
-      .then(function (json) {
-        json.parcelIntersect = json.parcelIntersect || wktFromPolygon(json.parcels[0], 'geometry')
-        var landuse = DATASETS['landuse']
-        var zoning = DATASETS['zoning']
-        var facility = DATASETS['cityfacilities']
-        landuse.wkt = zoning.wkt = json.addressIntersect
-        facility.wkt = json.parcelIntersect
-        Promise.all([
-          fetchData(landuse, 'landuse'),
-          fetchData(zoning, 'zoning'),
-          fetchData(facility, 'facility')
-        ])
-        .then(function (values) {
-          return Object.assign({}, json, values[0], values[1], values[2], {'building': ft['properties']})
-        })
-        .then(function(json) {
-          state = Object.assign({}, state, json)
-          renderBuildingInfo(json)
-        })
-      })
-    }
-  }
-
-  function tilt (on) {
-    var pitch = !on ? 0 : 60
-
-    if (!on) {
-      map.setPaintProperty('buildings-3d', 'fill-extrusion-opacity', 0)
-      map.setPaintProperty('buildings-2d', 'fill-opacity', 0.8)
-    } else {
-      map.setPaintProperty('buildings-3d', 'fill-extrusion-opacity', 0.8)
-      map.setPaintProperty('buildings-2d', 'fill-opacity', 0)
-    }
-
-    map.easeTo({pitch})
-  }
-
-  function updateOnMove (e) {
-    if (turf.distance(center, map.getCenter().toArray(), 'miles') >= .75) {
-      center = map.getCenter().toArray()
-      loadData(false)
-    }
-  }
-
-  function renderBuildingInfo (data) {
-    var body
-    var sections = []
-    // Buttons
-    sections.push(renderButton('Show permits and entitlements', 'permits'))
-    sections.push(renderButton('Show historic property tax rolls', 'propertytax'))
-    sections.push(renderButton('Show complaints', 'complaints'))
-    sections.push(renderButton('Show inspections', 'inspections'))
-    sections.push(renderButton('Show violations', 'violations'))
-    sections.push(renderButton('Show energy performance', 'energy'))
-
-    // General Characteristics info
-    var building = data.building
-    var landuse = data.landuse[0]
-    var facility = data.facility[0]
-    body = '<div>Building ID: ' + building.id + '</div>'
-    body += '<div>Max height: ' + building.height + ' m (' + Math.round(building.height * 328.084)/100 + ' ft)</div>'
-    body += '<div>Est. Year Built: ' + landuse.yrbuilt + '</div>'
-    if (facility) body += '<div>City Department Own or Lease: ' + facility.department_name + ' (' + facility.owned_leased + ')</div>'
-    sections.push(renderInfoSection('General Characteristics', body))
-
-    // Zoning info
-    var zoning = data.zoning[0]
-    var codeArray = zoning.url.split('_')
-    var code = codeArray[codeArray.length - 1]
-    var link = '<a href="' + zoning.url +  '">SF Planning Code Section ' + code + '</a>'
-    body = '<div>' + zoning.zoning + ', District: ' + zoning.districtna + ' ' + zoning.gen + ' ' + link
-    sections.push(renderInfoSection('Zoning', body))
-
-    // Land use info
-    body = '<div>Primary land use: ' + USECODES[landuse.landuse.toLowerCase()] + '</div>'
-    if (landuse.resunits) body += '<div>Est. Residential Units: ' + landuse.resunits + '</div>'
-    // Land use table
-    body += '<table class="small-table"><caption>Square footage by land use type</caption><thead><th>Land use type</th><th>Est. Square Footage</th></thead>'
-    var rows = Object.keys(landuse).filter(function (key) {
-      return USESQFT.indexOf(key) > -1
-    }).map(function (key) {
-      return '<tr><td class="use">' + USECODES[key.toLowerCase()] + '</td><td class="sqft">' + Number(landuse[key]).toLocaleString() + '</td></tr>'
-    }).join('')
-    body += '<tbody>' + rows + '</tbody>'
-    body += '<tfoot><tr><td>Total</td><td>' + Number(landuse.total_uses).toLocaleString() + '</td></tr></table>'
-    sections.push(renderInfoSection('Land Use', body))
-
-    // Associated addresses
-    var addresses = data.addresses
-    var list = addresses.map(function (elem) {
-      var address = elem.address + (elem.unit_number ? ' Unit ' + elem.unit_number : '')
-      return '<li>' + address + '</li>'
-    }).join('')
-    body = '<ul class="not-styled">' + list + '</ul>'
-    sections.push(renderInfoSection('Associated Addresses', body))
-
-    // Associated parcels
-    var parcels = data.parcels
-    var list = parcels.map(function (elem) {
-      var hist = elem.rec_drop ? ' (dropped ' + elem.rec_drop + ')' : ' (added ' + (elem.rec_add || ' on unknown date') + ')'
-      return '<li>' + elem.blklot + hist + '</li>'
-    }).join('')
-    body = '<ul class="not-styled">' + list + '</ul>'
-    sections.push(renderInfoSection('Associated Parcels', body))
-
-    document.querySelector('#buildingInfo .info-body').innerHTML = sections.join('')
-  }
-
-  function renderButton (title, type) {
-    return "<button class='button-primary' onclick='onSelectRelated(\"" + type + "\")'>" + title + "</button>"
-  }
-
-  function renderInfoSection (title, body) {
-    return "<div class='info-section'><h2>" + title + "</h2>" + body
-  }
-
-  function loadData (init) {
-    var mapBounds = map.getBounds()
-    var poly = {
-      'type': 'Feature',
-      'properties': {},
-      'geometry': {
-        'type': 'Polygon',
-        'coordinates': [[mapBounds.getNorthWest().toArray(), mapBounds.getNorthEast().toArray(), mapBounds.getSouthEast().toArray(), mapBounds.getSouthWest().toArray(), mapBounds.getNorthWest().toArray()]]
-      }
-    }
-
-    var buffered = turf.buffer(poly, 0.5, 'miles')
-    var bbox = turf.bbox(buffered)
-    // Socrata API returns the numeric columns as strings, we have to cast the ones we want to use in the extrusion as float
-    fetch('https://data.sfgov.org/resource/2s2t-jwzp.geojson?$select=sf16_bldgid+as+id,hgt_median_m,hgt_maxcm/100+as+height,the_geom&$limit=10000000&$where=within_box(the_geom,' + bbox[1] + ', ' + bbox[0] + ', ' + bbox[3] + ', ' + bbox[2] + ')&$order=objectid').then(function (response) {
-      response.json().then(function (json) {
-        json['features'] = json['features'].map(function (feature, idx) {
-          feature.properties.height = parseFloat(feature.properties.height)
-          return feature
-        })
-        init ? addBuildings(json) : updateBuildings(json)
-      })
-    })
-  }
-  // the 'building' layer in the mapbox-streets vector source contains building-height
-  // data from OpenStreetMap.
-  map.on('load', function () {
-    map.setLayoutProperty('building', 'visibility', 'none')
-    map.setPaintProperty('parks', 'fill-color', '#A5DC86')
-    loadData(true)
-
-    map.on('mousemove', onHoverBuilding)
-    map.on('click', function (e) {
-      onSelectBuilding(queryFeatures(e.point))
-    })
-    map.on('dragend', updateOnMove)
-    map.on('zoomend', updateOnMove)
-  })
-
-  geocoder.on('result', function (e) {
-      console.log(e)
-      var geocodeWKT = wellknown.stringify(e.result.geometry)
-      fetch(BASE_API + DATASETS['addresses'].id + '.geojson?$select=*,lower(address)&$where=lower_address="' + e.result.address + ' ' + e.result.text.toLowerCase() + '"')
-      .then(function (res) {
-        res.json().then(function (json) {
-          console.log(json)
-          fetch(BASE_API + DATASETS['buildings'].id + '.geojson?$select=sf16_bldgid+as+id,hgt_median_m,hgt_maxcm/100+as+height,the_geom&$where=intersects(the_geom, "' + wellknown.stringify(json.features[0]) + '")')
-          .then(function (res) {
-            res.json().then(function (json) {
-              if (json.features.length > 0) {
-                json.features[0].properties.height = Number(json.features[0].properties.height)
-                onSelectBuilding(json.features[0]) 
-              }
+      return fetch(baseQuery)
+        .then(function (res) {
+          return res.json().then(function (json) {
+            return Object.assign({}, data, {
+              [name]: json
             })
           })
         })
+    }
+
+    function whereParcelEq(alt) {
+      if (alt) return whereParcelBlockSlashLot()
+
+      return state.parcels.map(function (parcel) {
+        return 'parcel="' + parcel.blklot + '"'
+      }).join('+or+')
+    }
+
+    function whereParcelBlockSlashLot() {
+      return state.parcels.map(function (parcel) {
+        return 'parcel="' + parcel.block_num + '/' + parcel.lot_num + '"'
+      }).join('+or+')
+    }
+
+    function wktFromPolygon(data, geomName) {
+      var WKT = wellknown.stringify(data[geomName])
+      return WKT
+    }
+
+    function wktFromPoints(data, geomName) {
+      if (data.length === 0) return false
+
+      var points = []
+      if (data.length > 1) {
+        data.forEach(function (record, idx) {
+          var coords = record[geomName].coordinates
+          if (searchForArray(points, coords) === -1) {
+            points.push(coords)
+          }
+        })
+      } else {
+        points.push(data[0].location.coordinates)
+      }
+      var geometry = points.length > 1 ? turf.lineString(points) : turf.point(points[0])
+      var WKT = wellknown.stringify(geometry)
+      return WKT
+    }
+
+    function normalizePermitRecords(values) {
+      var date
+      var normalized = values.map(function (rec, idx) {
+        if (rec['permit_number']) {
+          var address = rec['street_number'] + (rec['street_number_suffix'] ? rec['street_number_suffix'] + ' ' : ' ') + rec['street_name'] + ' ' + rec['street_suffix']
+          date = rec['status_date'] ? rec['status_date'].split('T')[0] : ' unknown'
+          return {
+            record_id: rec['permit_number'],
+            parcel: rec['block'] + rec['lot'],
+            address,
+            issuing_department: 'Building Inspection',
+            record_type: rec['permit_type_definition'],
+            status: rec['status'],
+            status_date: date,
+            description: rec['description']
+          }
+        } else {
+          date = rec['record_status_date'] ? rec['record_status_date'].substr(0, 4) + '-' + rec['record_status_date'].substr(4, 2) + '-' + rec['record_status_date'].substr(6, 2) : ' unknown'
+          return {
+            record_id: rec['record_id'],
+            parcel: rec['apn'],
+            address: rec['address'],
+            issuing_department: 'Planning',
+            record_type: rec['record_type'],
+            status: rec['record_status'],
+            status_date: date,
+            description: rec['description']
+          }
+        }
       })
+
+      return normalized
+    }
+
+    function formatDate(date) {
+      console.log(date)
+      var eightchar = /^[0-9]{8}/
+      var iso = /^[0-9]{4}-[0-9]{2}-[0-9]{2}T/
+      if (iso.test(date)) {
+        return date.split('T')[0]
+      }
+      if (!date) {
+        return ' '
+      }
+      if (eightchar.test(date)) {
+        return date.substr(0, 4) + '-' + date.substr(4, 2) + '-' + date.substr(6, 2)
+      }
+    }
+
+    function formatMoney(money) {
+      if (!money) return ''
+      
+      return '$' + Number(money).toLocaleString('en-US')
+    }
+
+    function formatRecords(headers, records) {
+      // collect fields for normalization
+      var fields = headers.filter(function(header){
+        return header.indexOf('_date') > -1 || header.indexOf('_value') > -1
+      })
+      var numFields = fields.length
+      if (numFields === 0) return records
+
+      var numRecords = records.length
+      var i = 0
+      var formatted = []
+      for (i; i < numRecords; i++) {
+        var j = 0
+        formatted.push(records[i])
+        for (j; j < numFields; j++) {
+          if (fields[j].indexOf('_date') > -1) {
+            formatted[i][fields[j]] = formatDate(formatted[i][fields[j]])
+          } else if (fields[j].indexOf('_value') > -1) {
+            formatted[i][fields[j]] = formatMoney(formatted[i][fields[j]])
+          }
+        }
+      }
+      return formatted
+    }
+
+    function renderTable(records, headers, defaultSort) {
+      var tableElem = document.querySelector('#table')
+      var mapElem = document.querySelector('#map')
+      tableElem.classList.remove('table-hidden')
+      mapElem.classList.remove('table-hidden')
+      tableElem.classList.remove('no-records')
+      if(records.length > 0) {
+        var keys = headers ? headers : Object.keys(records[0])
+
+        var headers = '<tr>' + keys.map(function (key) {
+          return '<th class=' + key + '>' + key + '</th>'
+        }).join('') + '</tr>'
+
+        var template = '<tr>' + keys.map(function (key) {
+          return '<td class=' + key + '></td>'
+        }).join('') + '</tr>'
+
+        var options = {
+          valueNames: keys,
+          item: template
+        }
+
+        records = formatRecords(keys, records)
+
+        document.querySelector('#relatedRecords thead').innerHTML = headers
+        var table = new List('table', options)
+        table.clear()
+        table.add(records)
+        table.sort(defaultSort[0], {
+          order: 'desc'
+        })
+      } else {
+        tableElem.classList.add('no-records')
+        console.log('empty')
+      }
+    }
+
+    function onSelectRelated(type) {
+      var TYPES = {
+        'permits': {
+          'datasets': ['bldgpermits', 'plancases'],
+          'headers': ['issuing_department','record_id','record_type','status','status_date','parcel','address','description'],
+          'defaultSort': ['status_date']
+        },
+        'inspections': {
+          'datasets': ['fireinspections'],
+          'headers': ['department', 'assigned_to', 'inspection_number', 'start_date', 'end_date', 'status', 'description'],
+          'defaultSort': ['start_date']
+        },
+        'propertytax': {
+          'datasets': ['propertyrolls'],
+          'headers': ['property_location', 'parcel', 'closed_roll_fiscal_year', 'current_sales_date', 'prior_sales_date', 'recordation_date', 'land_value', 'improvement_value', 'fixture_value', 'homeowner_exemption_value', 'misc_exemption_value'],
+          'defaultSort': ['closed_roll_fiscal_year']
+        },
+        'complaints': {
+          'datasets': ['firecomplaints', 'dbicomplaints'],
+          'headers': ['department', 'assigned_to', 'complaint_number', 'inspection_number', 'file_date', 'parcel', 'address', 'description'],
+          'defaultSort': ['file_date']
+        },
+        'violations': {
+          'datasets': ['fireviolations', 'dbiviolations'],
+          'headers': ['department', 'assigned_to', 'violation_id', 'inspection_or_complaint_number', 'violation_date', 'status', 'parcel', 'address', 'description'],
+          'defaultSort': ['violation_date']
+        },
+        'energy': {
+          'datasets': ['energy']
+        }
+      }
+      var cb = 'process' + type
+      Promise.all(TYPES[type].datasets.map(function (param) {
+        var q = DATASETS[param]
+        if (!q.parcel) q.wkt = state.parcelIntersect
+        return fetchData(q, type)
+      }))
+        .then(function (values) {
+          values = values.reduce(function (prev, curr) {
+            return prev.concat(curr[type])
+          }, [])
+          return values
+        })
+        .then(function (json) {
+          renderTable(json, TYPES[type].headers, TYPES[type].defaultSort)
+        })
+    }
+
+    function onHoverBuilding(e) {
+      var features = map.queryRenderedFeatures(e.point, { layers: ['buildings-2d'] });
+      var ft = features[0]
+
+      if (ft) {
+        map.getSource('highlight').setData(ft)
+      } else {
+        map.getSource('highlight').setData(emptyGeojson)
+      }
+
+      var showTooltip = ft && e.originalEvent.which === 0
+
+      if (showTooltip) {
+        var html = '<strong>Building ID:</strong> ' +
+          ft.properties.id +
+          '<p>Click to select and query features</p>'
+        map.getCanvas().style.cursor = 'pointer'
+        popup.setLngLat(e.lngLat)
+          .setHTML(html)
+          .addTo(map)
+      } else {
+        map.getCanvas().style.cursor = ''
+        popup.remove()
+      }
+    }
+
+    function queryFeatures(point) {
+      var features = map.queryRenderedFeatures(point, { layers: ['buildings-3d'] })
+      return features[0]
+    }
+
+    function onSelectBuilding(ft) {
+      if (ft) {
+        map.getSource('selected').setData(ft)
+        map.getSource('highlight').setData(emptyGeojson)
+        var addresses = DATASETS['addresses']
+        addresses.wkt = wellknown.stringify(ft)
+        addresses.query = '$order=address,unit_number'
+        var parcels = DATASETS['parcels']
+        parcels.query = '$order=map_add+desc'
+
+        fetchData(addresses, 'addresses')
+          .then(function (json) {
+            parcels.wkt = json.addressIntersect = wktFromPoints(json.addresses, 'geometry')
+            if (!parcels.wkt) {
+              parcels.wkt = wellknown.stringify(turf.centerOfMass(ft))
+            }
+            if (typeof json.addressIntersect === 'string') {
+              return fetchData(parcels, 'parcels', json)
+            } else {
+              return fetchData(parcels, 'parcels', json).then(function (json) {
+                addresses.wkt = json.parcelIntersect = wktFromPolygon(json.parcels[0], 'geometry')
+                json.addressIntersect = parcels.wkt
+                return fetchData(addresses, 'addresses', json)
+              })
+            }
+          })
+          .then(function (json) {
+            json.parcelIntersect = json.parcelIntersect || wktFromPolygon(json.parcels[0], 'geometry')
+            var landuse = DATASETS['landuse']
+            var zoning = DATASETS['zoning']
+            var facility = DATASETS['cityfacilities']
+            landuse.wkt = zoning.wkt = json.addressIntersect
+            facility.wkt = json.parcelIntersect
+            Promise.all([
+              fetchData(landuse, 'landuse'),
+              fetchData(zoning, 'zoning'),
+              fetchData(facility, 'facility')
+            ])
+              .then(function (values) {
+                return Object.assign({}, json, values[0], values[1], values[2], { 'building': ft['properties'] })
+              })
+              .then(function (json) {
+                state = Object.assign({}, state, json)
+                renderBuildingInfo(json)
+              })
+          })
+      }
+    }
+
+    function tilt(on) {
+      var pitch = !on ? 0 : 60
+
+      if (!on) {
+        map.setPaintProperty('buildings-3d', 'fill-extrusion-opacity', 0)
+        map.setPaintProperty('buildings-2d', 'fill-opacity', 0.8)
+      } else {
+        map.setPaintProperty('buildings-3d', 'fill-extrusion-opacity', 0.8)
+        map.setPaintProperty('buildings-2d', 'fill-opacity', 0)
+      }
+
+      map.easeTo({ pitch })
+    }
+
+    function updateOnMove(e) {
+      if (turf.distance(center, map.getCenter().toArray(), 'miles') >= .75) {
+        center = map.getCenter().toArray()
+        loadData(false)
+      }
+    }
+
+    function renderBuildingInfo(data) {
+      var body
+      var sections = []
+      // Buttons
+      sections.push(renderButton('Show permits and entitlements', 'permits'))
+      sections.push(renderButton('Show historic property tax rolls', 'propertytax'))
+      sections.push(renderButton('Show complaints', 'complaints'))
+      sections.push(renderButton('Show inspections', 'inspections'))
+      sections.push(renderButton('Show violations', 'violations'))
+      sections.push(renderButton('Show energy performance', 'energy'))
+
+      // General Characteristics info
+      var building = data.building
+      var landuse = data.landuse[0]
+      var facility = data.facility[0]
+      body = '<div>Building ID: ' + building.id + '</div>'
+      body += '<div>Max height: ' + building.height + ' m (' + Math.round(building.height * 328.084) / 100 + ' ft)</div>'
+      body += '<div>Est. Year Built: ' + landuse.yrbuilt + '</div>'
+      if (facility) body += '<div>City Department Own or Lease: ' + facility.department_name + ' (' + facility.owned_leased + ')</div>'
+      sections.push(renderInfoSection('General Characteristics', body))
+
+      // Zoning info
+      var zoning = data.zoning[0]
+      var codeArray = zoning.url.split('_')
+      var code = codeArray[codeArray.length - 1]
+      var link = '<a href="' + zoning.url + '">SF Planning Code Section ' + code + '</a>'
+      body = '<div>' + zoning.zoning + ', District: ' + zoning.districtna + ' ' + zoning.gen + ' ' + link
+      sections.push(renderInfoSection('Zoning', body))
+
+      // Land use info
+      body = '<div>Primary land use: ' + USECODES[landuse.landuse.toLowerCase()] + '</div>'
+      if (landuse.resunits) body += '<div>Est. Residential Units: ' + landuse.resunits + '</div>'
+      // Land use table
+      body += '<table class="small-table"><caption>Square footage by land use type</caption><thead><th>Land use type</th><th>Est. Square Footage</th></thead>'
+      var rows = Object.keys(landuse).filter(function (key) {
+        return USESQFT.indexOf(key) > -1
+      }).map(function (key) {
+        return '<tr><td class="use">' + USECODES[key.toLowerCase()] + '</td><td class="sqft">' + Number(landuse[key]).toLocaleString() + '</td></tr>'
+      }).join('')
+      body += '<tbody>' + rows + '</tbody>'
+      body += '<tfoot><tr><td>Total</td><td>' + Number(landuse.total_uses).toLocaleString() + '</td></tr></table>'
+      sections.push(renderInfoSection('Land Use', body))
+
+      // Associated addresses
+      var addresses = data.addresses
+      var list = addresses.map(function (elem) {
+        var address = elem.address + (elem.unit_number ? ' Unit ' + elem.unit_number : '')
+        return '<li>' + address + '</li>'
+      }).join('')
+      body = '<ul class="not-styled">' + list + '</ul>'
+      sections.push(renderInfoSection('Associated Addresses', body))
+
+      // Associated parcels
+      var parcels = data.parcels
+      var list = parcels.map(function (elem) {
+        var hist = elem.rec_drop ? ' (dropped ' + elem.rec_drop + ')' : ' (added ' + (elem.rec_add || ' on unknown date') + ')'
+        return '<li>' + elem.blklot + hist + '</li>'
+      }).join('')
+      body = '<ul class="not-styled">' + list + '</ul>'
+      sections.push(renderInfoSection('Associated Parcels', body))
+
+      document.querySelector('#buildingInfo .info-body').innerHTML = sections.join('')
+    }
+
+    function renderButton(title, type) {
+      return "<button class='button-primary' onclick='onSelectRelated(\"" + type + "\")'>" + title + "</button>"
+    }
+
+    function renderInfoSection(title, body) {
+      return "<div class='info-section'><h2>" + title + "</h2>" + body
+    }
+
+    function loadData(init) {
+      var mapBounds = map.getBounds()
+      var poly = {
+        'type': 'Feature',
+        'properties': {},
+        'geometry': {
+          'type': 'Polygon',
+          'coordinates': [[mapBounds.getNorthWest().toArray(), mapBounds.getNorthEast().toArray(), mapBounds.getSouthEast().toArray(), mapBounds.getSouthWest().toArray(), mapBounds.getNorthWest().toArray()]]
+        }
+      }
+
+      var buffered = turf.buffer(poly, 0.5, 'miles')
+      var bbox = turf.bbox(buffered)
+      // Socrata API returns the numeric columns as strings, we have to cast the ones we want to use in the extrusion as float
+      fetch('https://data.sfgov.org/resource/2s2t-jwzp.geojson?$select=sf16_bldgid+as+id,hgt_median_m,hgt_maxcm/100+as+height,the_geom&$limit=10000000&$where=within_box(the_geom,' + bbox[1] + ', ' + bbox[0] + ', ' + bbox[3] + ', ' + bbox[2] + ')&$order=objectid').then(function (response) {
+        response.json().then(function (json) {
+          json['features'] = json['features'].map(function (feature, idx) {
+            feature.properties.height = parseFloat(feature.properties.height)
+            return feature
+          })
+          init ? addBuildings(json) : updateBuildings(json)
+        })
+      })
+    }
+    map.on('load', function () {
+      map.setLayoutProperty('building', 'visibility', 'none')
+      map.setPaintProperty('parks', 'fill-color', '#A5DC86')
+      loadData(true)
+
+      map.on('mousemove', onHoverBuilding)
+      map.on('click', function (e) {
+        onSelectBuilding(queryFeatures(e.point))
+      })
+      map.on('dragend', updateOnMove)
+      map.on('zoomend', updateOnMove)
     })
-</script>
+
+    geocoder.on('result', function (e) {
+      console.log(e)
+      var geocodeWKT = wellknown.stringify(e.result.geometry)
+      fetch(BASE_API + DATASETS['addresses'].id + '.geojson?$select=*,lower(address)&$where=lower_address="' + e.result.address + ' ' + e.result.text.toLowerCase() + '"')
+        .then(function (res) {
+          res.json().then(function (json) {
+            console.log(json)
+            fetch(BASE_API + DATASETS['buildings'].id + '.geojson?$select=sf16_bldgid+as+id,hgt_median_m,hgt_maxcm/100+as+height,the_geom&$where=intersects(the_geom, "' + wellknown.stringify(json.features[0]) + '")')
+              .then(function (res) {
+                res.json().then(function (json) {
+                  if (json.features.length > 0) {
+                    json.features[0].properties.height = Number(json.features[0].properties.height)
+                    onSelectBuilding(json.features[0])
+                  }
+                })
+              })
+          })
+        })
+    })
+
+  </script>
 
 </body>
+
 </html>
