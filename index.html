@@ -29,6 +29,15 @@
       width: 75%;
     }
 
+    #tableSource {
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      z-index: 1;
+      background-color: rgba(255, 255, 255, 0.8);
+      padding: 5px;
+    }
+
     #header {
       position: relative;
       min-height: 50px;
@@ -73,6 +82,10 @@
       font-size: 90%;
     }
 
+    #table table {
+      margin-bottom: 30px;
+    }
+
     #table thead tr {
       vertical-align: bottom;
     }
@@ -93,6 +106,7 @@
     table {
       border-spacing: 0;
       width: 100%;
+      margin-bottom: 0;
     }
 
     #footer {
@@ -275,6 +289,7 @@
 
     ul.not-styled {
       list-style: none;
+      margin-bottom: 0;
     }
 
     ul.not-styled li {
@@ -288,6 +303,15 @@
     .table-hidden #table {
       display: none;
     }
+
+    .table-hidden #tableSource {
+      display: none;
+    }
+
+    .table-source {
+      font-size: .8em;
+    }
+
     .no-records-message {
       display: none;
       text-align: center;
@@ -306,6 +330,9 @@
     .hidden {
       display: none;
     }
+    .data-source {
+      font-size: .8em;
+    }
   </style>
   <link href='loading.css' rel='stylesheet' />
 </head>
@@ -319,6 +346,11 @@
   <div id='content'>
     <div id='main' class='table-hidden'>
       <div id='map'></div>
+      <div id='tableSource'>
+          <div class='table-source'>
+          Data source: Inspections from SF Fire
+          </div>
+      </div>
       <div id='table'>
         <div class='no-records-message'>
           No related records for this building
@@ -403,7 +435,9 @@
     var DATASETS = {
       'fireinspections': {
         id: 'vygc-d77z',
+        fbf: 'wb4c-6hwj',
         geometry: 'location',
+        name: 'Fire Insepctions from SF Fire',
         select: {
           '"Fire"': 'department',
           'address': 'address',
@@ -417,21 +451,26 @@
       },
       'buildings': {
         id: '2s2t-jwzp',
+        fbf: '72ai-zege',
         geometry: 'the_geom'
       },
       'addresses': {
         id: 'c59h-mc8k',
+        fbf: 'dxjs-vqsy',
         geometry: 'location'
       },
       'parcels': {
         id: '3iun-6we5',
+        fbf: '3iun-6we5',
         geometry: 'geometry',
         parcel: 'blklot'
       },
       'bldgpermits': {
         id: 'vy2q-29it',
         geometry: 'location',
+        fbf: 'i98e-djp9',
         parcel: 'block||lot',
+        name: 'Building permits from SF Dept of Building Inspection',
         select: {
           'permit_number': 'record_id',
           'street_number||" "||street_name||" "||street_suffix': 'address',
@@ -446,6 +485,8 @@
         id: 'uqai-dcpf',
         geometry: 'the_geom',
         parcel: 'apn',
+        fbf: 'sqj6-g4dr',
+        name: 'Planning records from SF Planning',
         select: {
           'record_id': 'record_id',
           'address': 'address',
@@ -458,22 +499,28 @@
       },
       'energy': {
         id: '75rg-imyz',
+        fbf: 'j2j3-acqj',
         geometry: 'full_address',
         parcel: 'parcel_s',
-        pattern: 'block_num/lot_num'
+        pattern: 'block_num/lot_num',
+        name: 'Existing commercial buildings energy performance report from SF Environment'
       },
       'zoning': {
         id: '8br2-hhp3',
+        fbf: '8br2-hhp3',
         geometry: 'geometry'
       },
       'landuse': {
         id: 'a2rp-pwkh',
+        fbf: 'us3s-fp9q',
         geometry: 'the_geom'
       },
       'dbiviolations': {
         id: 'jfcn-py3d',
+        fbf: 'nbtm-fbw5',
         geometry: 'location',
         parcel: 'block||lot',
+        name: 'Violations from SF Dept of Building Inspection',
         select: {
           '"Building Inspection"': 'department',
           'street_number||" "||street_name||" "||street_suffix': 'address',
@@ -487,7 +534,9 @@
       },
       'fireviolations': {
         id: 'x75j-u3wx',
+        fbf: '4zuq-2cbe',
         geometry: 'location',
+        name: 'Violations from SF Fire',
         select: {
           '"Fire"': 'department',
           'address': 'address',
@@ -502,7 +551,9 @@
       },
       'firecomplaints': {
         id: 'v3w9-dyka',
+        fbf: '2wsq-7wmv',
         geometry: 'location',
+        name: 'Fire safety complaints from SF Fire',
         select: {
           '"Fire"': 'department',
           '"BFP District "||bfp_district': 'assigned_to',
@@ -516,8 +567,10 @@
       },
       'dbicomplaints': {
         id: 'frbs-hx9j',
+        fbf: 'gm2e-bten',
         geometry: 'location',
         parcel: 'block||lot',
+        name: 'Building complaints from SF Dept of Building Inspection',
         select: {
           '"Building Inspection"': 'department',
           'assigned_division': 'assigned_to',
@@ -530,13 +583,16 @@
       },
       'cityfacilities': {
         id: 'i5wr-crji',
+        fbf: 'nc68-ngbr',
         geometry: 'geom',
         parcel: 'block_lot'
       },
       'propertyrolls': {
         id: 'fk72-cxc3',
+        fbf: 'wv5m-vpq2',
         geometry: 'location',
         parcel: 'block_and_lot_number',
+        name: 'Historic secured property tax rolls from SF Assessor-Recorder',
         select: {
           'closed_roll_assessed_fixtures_value': 'fixtures_value',
           'closed_roll_assessed_improvement_value': 'improvement_value',
@@ -815,41 +871,6 @@
       return formatted
     }
 
-    function renderTable(records, headers, defaultSort) {
-      var mainElem = document.querySelector('#main')
-      var tableElem = document.querySelector('#table')
-      mainElem.classList.remove('table-hidden')
-      tableElem.classList.remove('no-records')
-      if(records.length > 0) {
-        var keys = headers ? headers : Object.keys(records[0])
-
-        var headers = '<tr>' + keys.map(function (key) {
-          return '<th class=' + key + '>' + key + '</th>'
-        }).join('') + '</tr>'
-
-        var template = '<tr>' + keys.map(function (key) {
-          return '<td class=' + key + '></td>'
-        }).join('') + '</tr>'
-
-        var options = {
-          valueNames: keys,
-          item: template
-        }
-
-        records = formatRecords(keys, records)
-
-        document.querySelector('#relatedRecords thead').innerHTML = headers
-        var table = new List('table', options)
-        table.clear()
-        table.add(records)
-        table.sort(defaultSort[0], {
-          order: 'desc'
-        })
-      } else {
-        tableElem.classList.add('no-records')
-      }
-    }
-
     function onSelectRelated(type) {
       loaderOn()
       var TYPES = {
@@ -880,10 +901,11 @@
         },
         'energy': {
           'datasets': ['energy'],
-          'headers': ['building_address', 'building_name', 'parcel', 'pim_link', 'energy_audit_due_date', 'energy_audit_status']
+          'headers': ['building_address', 'building_name', 'parcel', 'energy_audit_due_date', 'energy_audit_status', 'floor_area', 'property_type_self_selected']
         }
       }
       var cb = 'process' + type
+
       Promise.all(TYPES[type].datasets.map(function (param) {
         var q = DATASETS[param]
         if (!q.parcel) q.wkt = state.parcelIntersect
@@ -897,7 +919,7 @@
         })
         .then(function (json) {
           loaderOff()
-          renderTable(json, TYPES[type].headers, TYPES[type].defaultSort)
+          renderTable(json, TYPES[type].headers, TYPES[type].defaultSort, TYPES[type].datasets)
         })
     }
 
@@ -1021,6 +1043,51 @@
       }
     }
 
+    // rendering functions to display related tables and building information
+    function parseHeaderName(name) {
+      name = name.replace(/_/g,' ')
+      name = name.replace(/\b\w/g, function(l){ return l.toUpperCase() })
+      return name
+    }
+
+    function renderTable(records, headers, defaultSort, datasets) {
+      var mainElem = document.querySelector('#main')
+      var tableElem = document.querySelector('#table')
+      var sourceElem = document.querySelector('#tableSource .table-source')
+      mainElem.classList.remove('table-hidden')
+      tableElem.classList.remove('no-records')
+      if(records.length > 0) {
+        var keys = headers ? headers : Object.keys(records[0])
+
+        var headers = '<tr>' + keys.map(function (key) {
+          return '<th class=' + key + '>' + parseHeaderName(key) + '</th>'
+        }).join('') + '</tr>'
+
+        var template = '<tr>' + keys.map(function (key) {
+          return '<td class=' + key + '></td>'
+        }).join('') + '</tr>'
+
+        var options = {
+          valueNames: keys,
+          item: template
+        }
+
+        records = formatRecords(keys, records)
+
+        document.querySelector('#relatedRecords thead').innerHTML = headers
+        sourceElem.innerHTML = 'Data source(s): ' + renderTableSource(datasets)
+        var table = new List('table', options)
+        table.clear()
+        table.add(records)
+        table.sort(defaultSort[0], {
+          order: 'desc'
+        })
+      } else {
+        tableElem.classList.add('no-records')
+        sourceElem.innerHTML = ''
+      }
+    }
+
     function renderBuildingInfo(data) {
       var body
       var sections = []
@@ -1030,7 +1097,7 @@
       sections.push(renderButton('Show inspections', 'inspections'))
       sections.push(renderButton('Show complaints', 'complaints'))
       sections.push(renderButton('Show violations', 'violations'))
-      sections.push(renderButton('Show energy performance', 'energy'))
+      sections.push(renderButton('Show energy audit', 'energy'))
 
       // General Characteristics info
       var building = data.building
@@ -1041,6 +1108,7 @@
       body += '<div>Est. Year Built: ' + landuse.yrbuilt + '</div>'
       if (facility) body += '<div>City Department Own or Lease: ' + facility.department_name + ' (' + facility.owned_leased + ')</div>'
       sections.push(renderInfoSection('General Characteristics', body))
+      sections.push(renderDataSource(DATASETS['buildings'].fbf, 'Building Footprints from SF Dept of Tech'))
 
       // Zoning info
       var zoning = data.zoning[0]
@@ -1049,10 +1117,12 @@
       var link = '<a href="' + zoning.url + '">SF Planning Code Section ' + code + '</a>'
       body = '<div>' + zoning.zoning + ', District: ' + zoning.districtna + ' ' + zoning.gen + ' ' + link
       sections.push(renderInfoSection('Zoning', body))
+      sections.push(renderDataSource(DATASETS['zoning'].fbf, 'Zoning Districts from SF Planning'))
 
       // Land use info
       body = '<div>Primary land use: ' + USECODES[landuse.landuse.toLowerCase()] + '</div>'
       if (landuse.resunits) body += '<div>Est. Residential Units: ' + landuse.resunits + '</div>'
+
       // Land use table
       body += '<table class="small-table"><caption>Square footage by land use type</caption><thead><th>Land use type</th><th>Est. Square Footage</th></thead>'
       var rows = Object.keys(landuse).filter(function (key) {
@@ -1063,6 +1133,7 @@
       body += '<tbody>' + rows + '</tbody>'
       body += '<tfoot><tr><td>Total</td><td>' + Number(landuse.total_uses).toLocaleString() + '</td></tr></table>'
       sections.push(renderInfoSection('Land Use', body))
+      sections.push(renderDataSource(DATASETS['landuse'].fbf, 'Land Use from SF Planning'))
 
       // Associated addresses
       var addresses = data.addresses
@@ -1072,6 +1143,7 @@
       }).join('')
       body = '<ul class="not-styled">' + list + '</ul>'
       sections.push(renderInfoSection('Associated Addresses', body))
+      sections.push(renderDataSource(DATASETS['addresses'].fbf, 'Enterprise Addresses with Units from SF Dept of Tech'))
 
       // Associated parcels
       var parcels = data.parcels
@@ -1081,6 +1153,7 @@
       }).join('')
       body = '<ul class="not-styled">' + list + '</ul>'
       sections.push(renderInfoSection('Associated Parcels', body))
+      sections.push(renderDataSource(DATASETS['parcels'].fbf, 'Recorded Parcel Geography from SF Dept of Tech'))
 
       // replace building info
       document.querySelector('#buildingInfo .info-body').innerHTML = sections.join('')
@@ -1092,6 +1165,21 @@
 
     function renderInfoSection(title, body) {
       return "<div class='info-section'><h2>" + title + "</h2>" + body
+    }
+
+    function renderDataSource(id, name) {
+      return "<div class='data-source'><a target='_blank' href='https://data.sfgov.org/d/" + id + "'>Data source: " + name + "</a></div>"
+    }
+
+    function renderTableSource(datasets) {
+      var i = 0
+      var num = datasets.length
+      var links = []
+      for (var i; i < num; i++) {
+        var dataset = DATASETS[datasets[i]]
+        links.push("<a href='https://data.sfgov.org/d/" + dataset.fbf + "' target='_blank'>" + dataset.name + "</a>")
+      }
+      return links.join(', ')
     }
 
     function loadData(init) {
