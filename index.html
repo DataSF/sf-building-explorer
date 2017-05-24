@@ -860,7 +860,6 @@
     }
 
     function formatDate(date) {
-      console.log(date)
       var eightchar = /^[0-9]{8}/
       var iso = /^[0-9]{4}-[0-9]{2}-[0-9]{2}T/
       var slashes = /^[0-9]{1,2}\/[0-9]{1,2}\/[0-9]{4}/
@@ -1260,12 +1259,10 @@
     })
 
     geocoder.on('result', function (e) {
-      console.log(e)
       var geocodeWKT = wellknown.stringify(e.result.geometry)
       fetch(BASE_API + DATASETS['addresses'].id + '.geojson?$select=*,lower(address)&$where=lower_address="' + e.result.address + ' ' + e.result.text.toLowerCase() + '"')
         .then(function (res) {
           res.json().then(function (json) {
-            console.log(json)
             fetch(BASE_API + DATASETS['buildings'].id + '.geojson?$select=sf16_bldgid+as+id,hgt_median_m,hgt_maxcm/100+as+height,the_geom&$where=intersects(the_geom, "' + wellknown.stringify(json.features[0]) + '")')
               .then(function (res) {
                 res.json().then(function (json) {
