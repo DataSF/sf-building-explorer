@@ -281,11 +281,11 @@
       margin-bottom: 0;
     }
 
-    #map.table-hidden {
+    .table-hidden #map {
       bottom: 0;
     }
 
-    #table.table-hidden {
+    .table-hidden #table {
       display: none;
     }
     .no-records-message {
@@ -300,7 +300,14 @@
     .no-records .table-wrapper {
       display: none;
     }
+    .loading-text {
+      padding-top: 8px
+    }
+    .hidden {
+      display: none;
+    }
   </style>
+  <link href='loading.css' rel='stylesheet' />
 </head>
 
 <body>
@@ -310,19 +317,21 @@
     </div>
   </div>
   <div id='content'>
-    <div id='map' class='table-hidden'></div>
-    <div id='table' class='table-hidden'>
-      <div class='no-records-message'>
-        No related records for this building
-      </div>
-      <div class='table-wrapper'>
-        <table id='relatedRecords'>
-          <!-- IMPORTANT, class="list" have to be at tbody -->
-          <thead>
-          </thead>
-          <tbody class='list'>
-          </tbody>
-        </table>
+    <div id='main' class='table-hidden'>
+      <div id='map'></div>
+      <div id='table'>
+        <div class='no-records-message'>
+          No related records for this building
+        </div>
+        <div class='table-wrapper'>
+          <table id='relatedRecords'>
+            <!-- IMPORTANT, class="list" have to be at tbody -->
+            <thead>
+            </thead>
+            <tbody class='list'>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
     <div id='options'>
@@ -336,6 +345,10 @@
             <input id='2dim' type='radio' name='maptoggle' value='pizza' onclick='tilt(false)'>
             <label for='2dim' onclick='tilt(false)'>2D</label>
           </div>
+        </div>
+        <div class="loader" style='clear: both'>
+          <div class='signal'></div>
+          <div class='loading-text'>Loading...</div>
         </div>
         <div id='buildingInfo'>
           <div class='info-panel'>
@@ -383,9 +396,10 @@
     })
 
     document.getElementById('geocoder').appendChild(geocoder.onAdd(map))
-    // constants
+    // CONSTANTS
     var BASE_API = 'https://data.sfgov.org/resource/'
 
+    // define datasets used in the app including unique id, name of geometry column, name of parcel column(s) and any select properties
     var DATASETS = {
       'fireinspections': {
         id: 'vygc-d77z',
@@ -656,10 +670,12 @@
             'fill-extrusion-opacity': 0.5
           }
         })
+      loaderOff()
     }
 
     function updateBuildings(data) {
       map.getSource('buildings').setData(data)
+      loaderOff()
     }
 
     function searchForArray(haystack, needle) {
@@ -748,44 +764,11 @@
       return WKT
     }
 
-    function normalizePermitRecords(values) {
-      var date
-      var normalized = values.map(function (rec, idx) {
-        if (rec['permit_number']) {
-          var address = rec['street_number'] + (rec['street_number_suffix'] ? rec['street_number_suffix'] + ' ' : ' ') + rec['street_name'] + ' ' + rec['street_suffix']
-          date = rec['status_date'] ? rec['status_date'].split('T')[0] : ' unknown'
-          return {
-            record_id: rec['permit_number'],
-            parcel: rec['block'] + rec['lot'],
-            address,
-            issuing_department: 'Building Inspection',
-            record_type: rec['permit_type_definition'],
-            status: rec['status'],
-            status_date: date,
-            description: rec['description']
-          }
-        } else {
-          date = rec['record_status_date'] ? rec['record_status_date'].substr(0, 4) + '-' + rec['record_status_date'].substr(4, 2) + '-' + rec['record_status_date'].substr(6, 2) : ' unknown'
-          return {
-            record_id: rec['record_id'],
-            parcel: rec['apn'],
-            address: rec['address'],
-            issuing_department: 'Planning',
-            record_type: rec['record_type'],
-            status: rec['record_status'],
-            status_date: date,
-            description: rec['description']
-          }
-        }
-      })
-
-      return normalized
-    }
-
     function formatDate(date) {
       console.log(date)
       var eightchar = /^[0-9]{8}/
       var iso = /^[0-9]{4}-[0-9]{2}-[0-9]{2}T/
+      var slashes = /^[0-9]{1,2}\/[0-9]{1,2}\/[0-9]{4}/
       if (iso.test(date)) {
         return date.split('T')[0]
       }
@@ -794,6 +777,10 @@
       }
       if (eightchar.test(date)) {
         return date.substr(0, 4) + '-' + date.substr(4, 2) + '-' + date.substr(6, 2)
+      }
+      if (slashes.test(date)) {
+        var parts = date.split('/')
+        return parts[2] + '-' + (parts[0].length == 2 ? parts[0] : '0' + parts[0]) + '-' + (parts[1].length == 2 ? parts[1] : '0' + parts[1])
       }
     }
 
@@ -829,10 +816,9 @@
     }
 
     function renderTable(records, headers, defaultSort) {
+      var mainElem = document.querySelector('#main')
       var tableElem = document.querySelector('#table')
-      var mapElem = document.querySelector('#map')
-      tableElem.classList.remove('table-hidden')
-      mapElem.classList.remove('table-hidden')
+      mainElem.classList.remove('table-hidden')
       tableElem.classList.remove('no-records')
       if(records.length > 0) {
         var keys = headers ? headers : Object.keys(records[0])
@@ -861,11 +847,11 @@
         })
       } else {
         tableElem.classList.add('no-records')
-        console.log('empty')
       }
     }
 
     function onSelectRelated(type) {
+      loaderOn()
       var TYPES = {
         'permits': {
           'datasets': ['bldgpermits', 'plancases'],
@@ -893,7 +879,8 @@
           'defaultSort': ['violation_date']
         },
         'energy': {
-          'datasets': ['energy']
+          'datasets': ['energy'],
+          'headers': ['building_address', 'building_name', 'parcel', 'pim_link', 'energy_audit_due_date', 'energy_audit_status']
         }
       }
       var cb = 'process' + type
@@ -909,6 +896,7 @@
           return values
         })
         .then(function (json) {
+          loaderOff()
           renderTable(json, TYPES[type].headers, TYPES[type].defaultSort)
         })
     }
@@ -939,6 +927,22 @@
       }
     }
 
+    function loaderOff () {
+      document.querySelector('.loader').classList.add('hidden')
+    }
+
+    function loaderOn () {
+      document.querySelector('.loader').classList.remove('hidden')
+    }
+
+    function closeTable () {
+      document.querySelector('#main').classList.add('table-hidden')
+    }
+
+    function openTable () {
+      document.querySelector('#main').classList.remove('table-hidden')
+    }
+
     function queryFeatures(point) {
       var features = map.queryRenderedFeatures(point, { layers: ['buildings-3d'] })
       return features[0]
@@ -946,6 +950,8 @@
 
     function onSelectBuilding(ft) {
       if (ft) {
+        closeTable()
+        loaderOn()
         map.getSource('selected').setData(ft)
         map.getSource('highlight').setData(emptyGeojson)
         var addresses = DATASETS['addresses']
@@ -987,6 +993,7 @@
               })
               .then(function (json) {
                 state = Object.assign({}, state, json)
+                loaderOff()
                 renderBuildingInfo(json)
               })
           })
@@ -1020,8 +1027,8 @@
       // Buttons
       sections.push(renderButton('Show permits and entitlements', 'permits'))
       sections.push(renderButton('Show historic property tax rolls', 'propertytax'))
-      sections.push(renderButton('Show complaints', 'complaints'))
       sections.push(renderButton('Show inspections', 'inspections'))
+      sections.push(renderButton('Show complaints', 'complaints'))
       sections.push(renderButton('Show violations', 'violations'))
       sections.push(renderButton('Show energy performance', 'energy'))
 
@@ -1075,6 +1082,7 @@
       body = '<ul class="not-styled">' + list + '</ul>'
       sections.push(renderInfoSection('Associated Parcels', body))
 
+      // replace building info
       document.querySelector('#buildingInfo .info-body').innerHTML = sections.join('')
     }
 
@@ -1087,6 +1095,7 @@
     }
 
     function loadData(init) {
+      loaderOn()
       var mapBounds = map.getBounds()
       var poly = {
         'type': 'Feature',
