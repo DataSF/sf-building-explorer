@@ -357,7 +357,16 @@
     .data-source {
       font-size: .8em;
     }
-
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0,0,0,0);
+      border: 0;
+    }
     
   </style>
   <link href='loading.css' rel='stylesheet' />
@@ -366,7 +375,7 @@
 <body>
   <div id='header' class='group'>
     <div class='datasf-brand'>
-      A prototye application from <a href='https://datasf.org/' target='_blank'>DataSF</a> built on <a href='https://datasf.org/opendata/' target='_blank'>open data</a>
+      A prototye application from <a href='https://datasf.org/' target='_blank'>DataSF</a> made with <span class='sr-only'>heart</span><img role='presentation' aria-hidden='true' alt='' src='heart.png' style='height: 12px; width: auto' /> on <a href='https://datasf.org/opendata/' target='_blank'>open data</a>
     </div>
     <div class='inner-margin'>
       <div class='brand'>San Francisco Building Explorer (Demo)</div>
