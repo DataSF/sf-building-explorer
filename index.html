@@ -693,6 +693,10 @@
           'type': 'geojson',
           'data': emptyGeojson
         })
+        .addSource('single-point', {
+          'type': 'geojson',
+          'data': emptyGeojson
+        })
 
       map
         .addLayer({
@@ -765,6 +769,16 @@
             'fill-extrusion-opacity': 0.5
           }
         })
+        .addLayer({
+          "id": "point",
+          "source": "single-point",
+          "type": "circle",
+          "paint": {
+              "circle-radius": 10,
+              "circle-color": "#007cbf"
+          }
+        })
+
       loaderOff()
     }
 
@@ -1263,15 +1277,21 @@
       fetch(BASE_API + DATASETS['addresses'].id + '.geojson?$select=*,lower(address)&$where=lower_address="' + e.result.address + ' ' + e.result.text.toLowerCase() + '"')
         .then(function (res) {
           res.json().then(function (json) {
-            fetch(BASE_API + DATASETS['buildings'].id + '.geojson?$select=sf16_bldgid+as+id,hgt_median_m,hgt_maxcm/100+as+height,the_geom&$where=intersects(the_geom, "' + wellknown.stringify(json.features[0]) + '")')
-              .then(function (res) {
-                res.json().then(function (json) {
-                  if (json.features.length > 0) {
-                    json.features[0].properties.height = Number(json.features[0].properties.height)
-                    onSelectBuilding(json.features[0])
-                  }
+            if (json.features.length > 0) {
+              fetch(BASE_API + DATASETS['buildings'].id + '.geojson?$select=sf16_bldgid+as+id,hgt_median_m,hgt_maxcm/100+as+height,the_geom&$where=intersects(the_geom, "' + wellknown.stringify(json.features[0]) + '")')
+                .then(function (res) {
+                  res.json().then(function (json) {
+                    if (json.features.length > 0) {
+                      json.features[0].properties.height = Number(json.features[0].properties.height)
+                      onSelectBuilding(json.features[0])
+                      map.getSource('single-point').setData(emptyGeojson)
+                    }
+                  })
                 })
-              })
+            } else {
+              map.getSource('selected').setData(emptyGeojson)
+              map.getSource('single-point').setData(e.result.geometry)
+            }
           })
         })
     })
