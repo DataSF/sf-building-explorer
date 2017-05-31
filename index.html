@@ -446,27 +446,32 @@
   <script src="//cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
   <script>
     mapboxgl.accessToken = 'pk.eyJ1IjoiZ2VvamFzb24iLCJhIjoiY2l1NTNlYmIwMGh1dTJ5bzFmYWM4Z3M2aSJ9.JxA6SSvoURhQYi7gbmbZFg'
-    var center = [-122.41840239268754, 37.778666100153075]
-    var map = new mapboxgl.Map({
-      style: 'mapbox://styles/mapbox/light-v9',
-      center,
-      zoom: 16,
-      pitch: 60,
-      bearing: 36,
-      container: 'map'
-    })
+    if (!mapboxgl.supported()) {
+      alert('Your browser does not support Mapbox GL, please use a more recent browser');
+    } else {
+      var center = [-122.41840239268754, 37.778666100153075]
+      var map = new mapboxgl.Map({
+        style: 'mapbox://styles/mapbox/light-v9',
+        center,
+        zoom: 16,
+        pitch: 60,
+        bearing: 36,
+        container: 'map'
+      })
 
-    var geocoder = new MapboxGeocoder({
-      accessToken: mapboxgl.accessToken,
-      placeholder: 'Search map by address',
-      proximity: {
-        longitude: -122.41840239268754,
-        latitude: 37.778666100153075
-      },
-      country: 'US'
-    })
+      var geocoder = new MapboxGeocoder({
+        accessToken: mapboxgl.accessToken,
+        placeholder: 'Search map by address',
+        proximity: {
+          longitude: -122.41840239268754,
+          latitude: 37.778666100153075
+        },
+        country: 'US'
+      })
 
-    document.getElementById('geocoder').appendChild(geocoder.onAdd(map))
+      document.getElementById('geocoder').appendChild(geocoder.onAdd(map))
+  }
+    
     // CONSTANTS
     var BASE_API = 'https://data.sfgov.org/resource/'
 
@@ -827,6 +832,7 @@
 
       return fetch(baseQuery)
         .then(function (res) {
+          if (!res.ok) return { error: true }
           return res.json().then(function (json) {
             return Object.assign({}, data, {
               [name]: json
@@ -851,6 +857,9 @@
 
     function wktFromPolygon(data, geomName) {
       var WKT = wellknown.stringify(data[geomName])
+      if (WKT.length > 1200) {
+        WKT = wellknown.stringify(turf.simplify(data[geomName],0.000001,false))
+      }
       return WKT
     }
 
@@ -1030,6 +1039,10 @@
         map.getSource('highlight').setData(emptyGeojson)
         var addresses = DATASETS['addresses']
         addresses.wkt = wellknown.stringify(ft)
+        if (addresses.wkt.length > 1200) {
+          // simplify the complex shapes for smaller uri payload
+          addresses.wkt = wellknown.stringify(turf.simplify(ft, 0.0001, false))
+        }
         addresses.query = '$order=address,unit_number'
         var parcels = DATASETS['parcels']
         parcels.query = '$order=map_add+desc'
@@ -1274,17 +1287,33 @@
 
     geocoder.on('result', function (e) {
       var geocodeWKT = wellknown.stringify(e.result.geometry)
-      fetch(BASE_API + DATASETS['addresses'].id + '.geojson?$select=*,lower(address)&$where=lower_address="' + e.result.address + ' ' + e.result.text.toLowerCase() + '"')
+      var text = e.result.text
+      // normalize directions to improve matches with addresses
+      var dirMapping = {
+        'N': 'north',
+        'S': 'south',
+        'E': 'east',
+        'W': 'west'
+      }
+      var firstPos = e.result.text.split(' ')[0]
+      if (Object.keys(dirMapping).indexOf(firstPos) > -1) {
+        text = e.result.text.replace(firstPos, dirMapping[firstPos])
+      }
+      // lookup geo by address text string
+      fetch(BASE_API + DATASETS['addresses'].id + '.geojson?$select=*,lower(address)&$where=lower_address="' + e.result.address + ' ' + text.toLowerCase() + '"')
         .then(function (res) {
-          res.json().then(function (json) {
-            if (json.features.length > 0) {
-              fetch(BASE_API + DATASETS['buildings'].id + '.geojson?$select=sf16_bldgid+as+id,hgt_median_m,hgt_maxcm/100+as+height,the_geom&$where=intersects(the_geom, "' + wellknown.stringify(json.features[0]) + '")')
+          res.json().then(function (addressJson) {
+            if (addressJson.features.length > 0) {
+              fetch(BASE_API + DATASETS['buildings'].id + '.geojson?$select=sf16_bldgid+as+id,hgt_median_m,hgt_maxcm/100+as+height,the_geom&$where=intersects(the_geom, "' + wellknown.stringify(addressJson.features[0]) + '")')
                 .then(function (res) {
                   res.json().then(function (json) {
                     if (json.features.length > 0) {
                       json.features[0].properties.height = Number(json.features[0].properties.height)
                       onSelectBuilding(json.features[0])
                       map.getSource('single-point').setData(emptyGeojson)
+                    } else {
+                      map.getSource('selected').setData(emptyGeojson)
+                      map.getSource('single-point').setData(addressJson.features[0])
                     }
                   })
                 })
