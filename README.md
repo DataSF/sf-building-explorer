@@ -1,4 +1,4 @@
-##SF Building Explorer
+## SF Building Explorer
 
 This is a quick and dirty demonstration project showcasing the use of building footprints in an application to link various administrative data together. It is not built to production standards. It's just basic HTML, CSS and javascript with some minimal libraries to support mapping. Libraries include:
 
@@ -6,7 +6,7 @@ This is a quick and dirty demonstration project showcasing the use of building f
 2. [Turf.js](https://github.com/Turfjs/turf)
 3. [Wellknown](https://github.com/mapbox/wellknown)
 
-###Running locally
+### Running locally
 
 On the command line:
 1. `git clone git@github.com:DataSF/sf-building-explorer.git`
@@ -18,10 +18,10 @@ In your browser:
 
 * [You must have python 2.7 installed to run SimpleHTTPServer](https://docs.python.org/2/library/simplehttpserver.html)
 
-###Contributing
+### Contributing
 
 This is just a demonstration application, so no heavy development right now, but if you find any issues, please feel free open an issue and describe the problem clearly so we can fix it.
 
-###Copyright and License
+### Copyright and License
 
 Code copyright 2017 the City and County of San Francisco. Code released under the [MIT License](https://github.com/DataSF/sf-building-explorer/blob/master/LICENSE).
