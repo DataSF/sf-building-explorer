@@ -20,6 +20,24 @@ In your browser:
 
 * [You must have python 2.7 installed to run SimpleHTTPServer](https://docs.python.org/2/library/simplehttpserver.html)
 
+### Open datasets being used
+
+-  [Building Footprints](https://data.sfgov.org/Housing-and-Buildings/Building-Footprints/72ai-zege)
+-  [Secured Property Tax Rolls](https://data.sfgov.org/Housing-and-Buildings/Historic-Secured-Property-Tax-Rolls/wv5m-vpq2)
+-  [Building Permits](https://data.sfgov.org/Housing-and-Buildings/Building-Permits/i98e-djp9)
+-  [Planning Records](https://data.sfgov.org/Housing-and-Buildings/Planning-Department-Records/sqj6-g4dr)
+-  [Fire Inspections](https://data.sfgov.org/Housing-and-Buildings/Fire-Inspections/wb4c-6hwj)
+-  [Building Violations](https://data.sfgov.org/Housing-and-Buildings/Notices-of-Violation-issued-by-the-Department-of-B/nbtm-fbw5)
+-  [Fire Violations](https://data.sfgov.org/Housing-and-Buildings/Fire-Violations/4zuq-2cbe)
+-  [Building Complaints](https://data.sfgov.org/Housing-and-Buildings/Building-Complaints/gm2e-bten)
+-  [Fire Complaints](https://data.sfgov.org/Housing-and-Buildings/Fire-Safety-Complaints/2wsq-7wmv)
+-  [Commercial Energy Performance Audits](https://data.sfgov.org/Energy-and-Environment/Existing-Commercial-Buildings-Energy-Performance-O/j2j3-acqj)
+-  [Zoning](https://data.sfgov.org/Geographic-Locations-and-Boundaries/Zoning-Districts/8br2-hhp3)
+-  [Land Use](https://data.sfgov.org/Housing-and-Buildings/Land-Use/us3s-fp9q)
+-  [City Facilities](https://data.sfgov.org/City-Infrastructure/City-Facilities/nc68-ngbr)
+-  [EAS Addresses with Units](https://data.sfgov.org/Geographic-Locations-and-Boundaries/Addresses-with-Units-Enterprise-Addressing-System-/dxjs-vqsy)
+-  [Recorded parcel geography (current and historic parcels)](https://data.sfgov.org/Geographic-Locations-and-Boundaries/Recorded-Parcel-Geography-with-Transaction-Date-Hi/3iun-6we5)
+
 ### Contributing
 
 This is just a demonstration application, so no heavy development right now, but if you find any issues, please feel free open an issue and describe the problem clearly so we can fix it.
