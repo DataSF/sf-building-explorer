@@ -367,6 +367,11 @@
       clip: rect(0,0,0,0);
       border: 0;
     }
+
+    .advisory {
+      font-size: .8em;
+      font-weight: bold;
+    }
     
   </style>
   <link href='loading.css' rel='stylesheet' />
@@ -1221,7 +1226,7 @@
       if (landuse.resunits) body += '<div>Est. Residential Units: ' + landuse.resunits + '</div>'
 
       // Land use table
-      body += '<table class="small-table"><caption>Square footage by land use type</caption><thead><th>Land use type</th><th>Est. Square Footage</th></thead>'
+      body += '<table class="small-table"><caption>Square footage by land use type*</caption><thead><th>Land use type</th><th>Est. Square Footage</th></thead>'
       var rows = Object.keys(landuse).filter(function (key) {
         return USESQFT.indexOf(key) > -1
       }).map(function (key) {
@@ -1229,6 +1234,7 @@
       }).join('')
       body += '<tbody>' + rows + '</tbody>'
       body += '<tfoot><tr><td>Total</td><td>' + Number(landuse.total_uses).toLocaleString() + '</td></tr></table>'
+      body += '<p class="advisory">*Land use square footage data are derived from a variety of sources, subject to errors and ommissions.</p>'
       sections.push(renderInfoSection('Land Use', body))
       sections.push(renderDataSource(DATASETS['landuse'].fbf, 'Land Use from SF Planning'))
 
