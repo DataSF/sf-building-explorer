@@ -663,7 +663,8 @@
         id: 'i5wr-crji',
         fbf: 'nc68-ngbr',
         geometry: 'geom',
-        parcel: 'block_lot'
+        parcel: 'block_lot',
+        name: 'City facilities from SF City Administrator'
       },
       'propertyrolls': {
         id: 'fk72-cxc3',
@@ -1208,10 +1209,10 @@
       var facility = data.facility[0]
       body = '<div>Building ID: ' + building.id + '</div>'
       body += '<div>Median height (derived fr. LIDAR): ' + building.height + ' m (' + Math.round(building.height * 328.084) / 100 + ' ft)</div>'
-      body += '<div>Est. Year Built: ' + landuse.yrbuilt + '</div>'
-      if (facility) body += '<div>City Department Own or Lease: ' + facility.department_name + ' (' + facility.owned_leased + ')</div>'
+      if (facility) body += '<div>City Department Owned or Leased: ' + facility.department_name + ' (' + facility.owned_leased + ')</div>'
       sections.push(renderInfoSection('General Characteristics', body))
       sections.push(renderDataSource(DATASETS['buildings'].fbf, 'Building Footprints from SF Dept of Tech'))
+      if (facility) sections.push(renderDataSource(DATASETS['cityfacilities'].fbf, 'City Facilities from SF City Administrator'))
 
       // Zoning info
       var zoning = data.zoning[0]
@@ -1224,6 +1225,7 @@
 
       // Land use info
       body = '<div>Primary land use: ' + USECODES[landuse.landuse.toLowerCase()] + '</div>'
+      body += '<div>Est. Year Built: ' + landuse.yrbuilt + '</div>'
       if (landuse.resunits) body += '<div>Est. Residential Units: ' + landuse.resunits + '</div>'
 
       // Land use table
