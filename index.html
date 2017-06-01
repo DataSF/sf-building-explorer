@@ -549,7 +549,8 @@
           'record_status': 'status',
           'record_status_date': 'status_date',
           'description': 'description'
-        }
+        },
+        where: 'record_type_type+in("Applications","Research","Other","Project")'
       },
       'energy': {
         id: '75rg-imyz',
@@ -634,6 +635,23 @@
           'street_number||" "||street_name||" "||street_suffix': 'address',
           '"N/A"': 'inspection_number'
         }
+      },
+      'plancomplaints': {
+        id: 'uqai-dcpf',
+        geometry: 'the_geom',
+        parcel: 'apn',
+        fbf: 'sqj6-g4dr',
+        name: 'Planning records from SF Planning',
+        select: {
+          '"Planning"': 'department',
+          'record_type_subtype': 'assigned_to',
+          'record_id': 'complaint_number',
+          'date_opened': 'file_date',
+          'address': 'address',
+          'description': 'description',
+          '"N/A"': 'inspection_number'
+        },
+        where: 'record_type_type="Complaint"'
       },
       'cityfacilities': {
         id: 'i5wr-crji',
@@ -837,6 +855,10 @@
       var alt = typeof q.pattern !== 'undefined'
       baseQuery += q.wkt ? '&$where=intersects(geometry,"' + q.wkt + '")' : '&$where=' + whereParcelEq(alt)
 
+      if(q.where) {
+        baseQuery += '+and+' + q.where
+      }
+
       // additional optional query string
       baseQuery += q.query ? '&' + q.query : ''
 
@@ -961,7 +983,7 @@
           'defaultSort': ['closed_roll_fiscal_year']
         },
         'complaints': {
-          'datasets': ['firecomplaints', 'dbicomplaints'],
+          'datasets': ['firecomplaints', 'dbicomplaints', 'plancomplaints'],
           'headers': ['department', 'assigned_to', 'complaint_number', 'inspection_number', 'file_date', 'parcel', 'address', 'description'],
           'defaultSort': ['file_date']
         },
@@ -1167,7 +1189,7 @@
       var body
       var sections = []
       // Buttons
-      sections.push(renderButton('Show permits and entitlements', 'permits'))
+      sections.push(renderButton('Show permits and planning apps.', 'permits'))
       sections.push(renderButton('Show historic property tax rolls', 'propertytax'))
       sections.push(renderButton('Show inspections', 'inspections'))
       sections.push(renderButton('Show complaints', 'complaints'))
