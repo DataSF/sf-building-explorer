@@ -374,6 +374,9 @@
       margin-bottom: .4em;
     }
     
+    .facility {
+      margin-bottom: .4em;
+    }
   </style>
   <link href='loading.css' rel='stylesheet' />
     <script>
@@ -1206,14 +1209,25 @@
       // General Characteristics info
       var building = data.building
       var landuse = data.landuse[0]
-      var facility = data.facility[0]
+      var facility = data.facility
       body = '<div>Building ID: ' + building.id + '</div>'
       body += '<div>Median height (derived fr. LIDAR): ' + building.height + ' m (' + Math.round(building.height * 328.084) / 100 + ' ft)</div>'
       if (facility) body += '<div>City Department Owned or Leased: ' + facility.department_name + ' (' + facility.owned_leased + ')</div>'
       sections.push(renderInfoSection('General Characteristics', body))
       sections.push(renderDataSource(DATASETS['buildings'].fbf, 'Building Footprints from SF Dept of Tech'))
-      if (facility) sections.push(renderDataSource(DATASETS['cityfacilities'].fbf, 'City Facilities from SF City Administrator'))
+      if (facility) 
 
+      // City Facilities info
+      if (facility.length > 0) {
+        body = ''
+
+        for (var i = 0, len = facility.length; i < len; i++) {
+          var leaseOwn = facility[i] == 'Own' ? 'owned' : 'leased'
+          body += '<div class="facility">' + facility[i].address + ' ' + leaseOwn + ' by ' + facility[i].department_name + '</div>'
+        }
+        sections.push(renderInfoSection('City Facilities', body))
+        sections.push(renderDataSource(DATASETS['cityfacilities'].fbf, 'City Facilities from SF City Administrator'))
+      }
       // Zoning info
       var zoning = data.zoning[0]
       var codeArray = zoning.url.split('_')
