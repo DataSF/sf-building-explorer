@@ -1212,7 +1212,6 @@
       var facility = data.facility
       body = '<div>Building ID: ' + building.id + '</div>'
       body += '<div>Median height (derived fr. LIDAR): ' + building.height + ' m (' + Math.round(building.height * 328.084) / 100 + ' ft)</div>'
-      if (facility) body += '<div>City Department Owned or Leased: ' + facility.department_name + ' (' + facility.owned_leased + ')</div>'
       sections.push(renderInfoSection('General Characteristics', body))
       sections.push(renderDataSource(DATASETS['buildings'].fbf, 'Building Footprints from SF Dept of Tech'))
       if (facility) 
