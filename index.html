@@ -1026,12 +1026,17 @@
         })
     }
 
+
     function onHoverBuilding(e) {
-      var features = map.queryRenderedFeatures(e.point, { layers: ['buildings-2d'] });
-      var ft = features[0]
+      var ft = data = queryFeatures(e.point, null)
+
+      if (map.getZoom() > 17 && ft) {
+        var queryBox = [[e.point.y - 500, e.point.x - 500], [e.point.y + 500, e.point.x + 500]]
+        data = queryFeatures(null, ft.properties.id)
+      } 
 
       if (ft) {
-        map.getSource('highlight').setData(ft)
+        map.getSource('highlight').setData(data)
       } else {
         map.getSource('highlight').setData(emptyGeojson)
       }
@@ -1068,9 +1073,27 @@
       document.querySelector('#main').classList.remove('table-hidden')
     }
 
-    function queryFeatures(point) {
-      var features = map.queryRenderedFeatures(point, { layers: ['buildings-3d'] })
-      return features[0]
+    function queryFeatures(query, id) {
+      var options = {layers: ['buildings-2d']}
+      if (id) options.filter = ['==', 'id', id]
+
+      var features = id ? map.queryRenderedFeatures(options) : map.queryRenderedFeatures(query, options)
+      var data = features[0]
+      if (features.length > 1) {
+        data = {
+          type: 'Feature', 
+          geometry: features[0].geometry,
+          properties: features[0].properties
+        }
+        for (var i=1, len=features.length; i < len; i++) {
+          data = turf.union({
+            type: 'Feature',
+            geometry: features[i].geometry,
+            properties: features[i].properties
+          }, data)
+        }
+      }      
+      return data
     }
 
     function onSelectBuilding(ft) {
@@ -1333,7 +1356,9 @@
 
       map.on('mousemove', onHoverBuilding)
       map.on('click', function (e) {
-        onSelectBuilding(queryFeatures(e.point))
+        var feature = queryFeatures(e.point)
+        feature = map.getZoom() > 17 ? queryFeatures(null, feature.properties.id) : feature
+        onSelectBuilding(feature)
       })
       map.on('dragend', updateOnMove)
       map.on('zoomend', updateOnMove)
