@@ -1244,7 +1244,7 @@
         body = ''
 
         for (var i = 0, len = facility.length; i < len; i++) {
-          var leaseOwn = facility[i] == 'Own' ? 'owned' : 'leased'
+          var leaseOwn = facility[i].owned_leased === 'Own' ? 'owned' : 'leased'
           body += '<div class="facility">' + facility[i].address + ' ' + leaseOwn + ' by ' + facility[i].department_name + '</div>'
         }
         sections.push(renderInfoSection('City Facilities', body))
