@@ -1258,7 +1258,7 @@
       var codeArray = zoning.url.split('_')
       var code = codeArray[codeArray.length - 1]
       var link = '<a href="' + zoning.url + '">SF Planning Code Section ' + code + '</a>'
-      body = '<div>' + zoning.zoning + ', District: ' + zoning.districtna + ' ' + zoning.gen + ' ' + link
+      body = '<div>' + zoning.zoning + ', District: ' + zoning.districtname + ' ' + zoning.gen + ' ' + link
       sections.push(renderInfoSection('Zoning', body))
       sections.push(renderDataSource(DATASETS['zoning'].fbf, 'Zoning Districts from SF Planning'))
 
