@@ -674,7 +674,7 @@
         id: 'fk72-cxc3',
         fbf: 'wv5m-vpq2',
         geometry: 'the_geom',
-        parcel: 'block_and_lot_number',
+        parcel: 'parcel_number',
         name: 'Historic secured property tax rolls from SF Assessor-Recorder',
         select: {
           'assessed_fixtures_value': 'fixtures_value',
@@ -888,7 +888,7 @@
       if (alt) return whereParcelBlockSlashLot()
 
       return state.parcels.map(function (parcel) {
-        return 'parcel="' + parcel.blklot + '"'
+        return 'parcel="' + parcel.blk_lot + '"'
       }).join('+or+')
     }
 
