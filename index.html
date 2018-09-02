@@ -1111,7 +1111,7 @@
         }
         addresses.query = '$order=address,unit_number'
         var parcels = DATASETS['parcels']
-        parcels.query = '$order=map_add+desc'
+        parcels.query = '$order=date_map_add+desc'
 
         fetchData(addresses, 'addresses')
           .then(function (json) {
