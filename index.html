@@ -1292,7 +1292,7 @@
       var parcels = data.parcels
       var list = parcels.map(function (elem) {
         var hist = elem.rec_drop ? ' (dropped ' + elem.rec_drop + ')' : ' (added ' + (elem.rec_add || ' on unknown date') + ')'
-        return '<li>' + elem.blklot + hist + '</li>'
+        return '<li>' + elem.blk_lot + hist + '</li>'
       }).join('')
       body = '<ul class="not-styled">' + list + '</ul>'
       sections.push(renderInfoSection('Associated Parcels', body))
