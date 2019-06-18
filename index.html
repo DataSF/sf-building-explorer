@@ -1339,7 +1339,7 @@
       var buffered = turf.buffer(poly, 0.5, 'miles')
       var bbox = turf.bbox(buffered)
       // Socrata API returns the numeric columns as strings, we have to cast the ones we want to use in the extrusion as float
-      fetch('https://data.sfgov.org/resource/ynuv-fyni.geojson?$select=sf16_bldgid+as+id,hgt_median_m+as+height,the_geom&$limit=10000000&$where=within_box(the_geom,' + bbox[1] + ', ' + bbox[0] + ', ' + bbox[3] + ', ' + bbox[2] + ')&$order=objectid').then(function (response) {
+      fetch('https://data.sfgov.org/resource/ynuv-fyni.geojson?$select=sf16_bldgid+as+id,hgt_median_m+as+height,shape&$limit=10000000&$where=within_box(shape,' + bbox[1] + ', ' + bbox[0] + ', ' + bbox[3] + ', ' + bbox[2] + ')&$order=globalid').then(function (response) {
         response.json().then(function (json) {
           json['features'] = json['features'].map(function (feature, idx) {
             feature.properties.height = parseFloat(feature.properties.height)
